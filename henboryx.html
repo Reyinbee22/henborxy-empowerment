@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HENBORYX Empowerment - Poverty Eradication Platform</title>
+    <title>HENBORYX Empowerment - 2×2 Matrix System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Paystack Inline Script -->
     <script src="https://js.paystack.co/v2/inline.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,7 +62,7 @@
         .hero { text-align: center; padding: 80px 20px; color: white; }
         .hero h1 { font-size: 3.5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
         .hero h1 span { color: var(--secondary); }
-        .hero p { font-size: 1.3rem; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; opacity: 0.95; }
+        .hero p { font-size: 1.3rem; margin-bottom: 40px; max-width: 700px; margin-left: auto; margin-right: auto; opacity: 0.95; }
         .hero-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         .features {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -171,7 +170,7 @@
         .progress-header h3 { color: var(--dark); font-size: 1.8rem; margin-bottom: 10px; }
         .stages-container {
             display: flex; justify-content: space-between; align-items: center;
-            position: relative; max-width: 800px; margin: 0 auto;
+            position: relative; max-width: 900px; margin: 0 auto; flex-wrap: wrap; gap: 20px;
         }
         .stages-line {
             position: absolute; top: 50%; left: 0; right: 0; height: 4px;
@@ -182,7 +181,7 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             transform: translateY(-50%); z-index: 1; transition: width 0.5s ease;
         }
-        .stage { position: relative; z-index: 2; text-align: center; flex: 1; }
+        .stage { position: relative; z-index: 2; text-align: center; flex: 1; min-width: 100px; }
         .stage-circle {
             width: 60px; height: 60px; border-radius: 50%; background: #e0e0e0;
             display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
@@ -192,10 +191,10 @@
         .stage.completed .stage-circle { background: var(--primary); color: white; }
         .stage.current .stage-circle { background: var(--secondary); color: white; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(244, 162, 97, 0.4); } 50% { box-shadow: 0 0 0 15px rgba(244, 162, 97, 0); } }
-        .stage-label { font-weight: 600; color: var(--dark); font-size: 0.9rem; }
-        .stage-requirement { font-size: 0.8rem; color: #888; margin-top: 5px; }
+        .stage-label { font-weight: 600; color: var(--dark); font-size: 0.85rem; }
+        .stage-requirement { font-size: 0.75rem; color: #888; margin-top: 5px; }
         .referral-section { background: white; padding: 40px; border-radius: 20px; box-shadow: var(--shadow); text-align: center; }
-        .referral-section h3 { color: var(--dark); margin-bottom: 20px; font-size: 1.5rem; }
+        .Referral-section h3 { color: var(--dark); margin-bottom: 20px; font-size: 1.5rem; }
         .referral-box {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 30px; border-radius: 15px; margin: 20px 0; border: 2px dashed var(--primary);
@@ -207,28 +206,29 @@
             display: inline-flex; align-items: center; gap: 10px;
         }
         .copy-btn:hover { background: var(--primary-light); transform: translateY(-2px); }
-        .copy-btn.copied { background: #28a745; }
+        .Copy-btn.copied { background: #28a745; }
         .share-buttons { margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .share-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.3rem; color: white; transition: transform 0.3s; }
         .share-btn:hover { transform: scale(1.1); }
-        .share-btn.whatsapp { background: #25d366; }
+        .Share-btn.whatsapp { background: #25d366; }
         .share-btn.facebook { background: #1877f2; }
-        .share-btn.twitter { background: #1da1f2; }
-        .share-btn.telegram { background: #0088cc; }
-        .referrals-list { background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-top: 30px; }
-        .referrals-list h3 { color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .referral-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
-        .referral-item:hover { background: #f8f9fa; border-radius: 10px; }
-        .referral-info { display: flex; align-items: center; gap: 15px; }
-        .referral-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
-        .referral-details h4 { color: var(--dark); font-size: 1rem; }
-        .referral-details p { color: #888; font-size: 0.85rem; }
-        .referral-status { padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; }
-        .status-active { background: #e8f5e9; color: #2e7d32; }
-        .empty-state { text-align: center; padding: 40px; color: #888; }
-        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #ddd; }
-        .logout-btn { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .logout-btn:hover { background: var(--accent); color: white; }
+        .Share-btn.twitter { background: #1da1f2; }
+        .Share-btn.telegram { background: #0088cc; }
+        .Referrals-list { background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-top: 30px; }
+        .Referrals-list h3 { color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .Referral-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
+        .Referral-item:hover { background: #f8f9fa; border-radius: 10px; }
+        .Referral-info { display: flex; align-items: center; gap: 15px; }
+        .Referral-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .Referral-details h4 { color: var(--dark); font-size: 1rem; }
+        .Referral-details p { color: #888; font-size: 0.85rem; }
+        .Referral-status { padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; }
+        .Status-active { background: #e8f5e9; color: #2e7d32; }
+        .Status-pending { background: #fff3e0; color: #ef6c00; }
+        .Empty-state { text-align: center; padding: 40px; color: #888; }
+        .Empty-state i { font-size: 3rem; margin-bottom: 15px; color: #ddd; }
+        .Logout-btn { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .Logout-btn:hover { background: var(--accent); color: white; }
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .nav-links { gap: 15px; }
@@ -236,7 +236,7 @@
             .welcome-banner { text-align: center; justify-content: center; }
             .stages-container { flex-direction: column; gap: 20px; }
             .stages-line, .stages-progress { display: none; }
-            .stage { width: 100%; }
+            .Stage { width: 100%; }
         }
         .spinner {
             display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3;
@@ -250,7 +250,43 @@
             position: absolute; animation: confetti-fall 3s linear forwards; z-index: 9999;
         }
         @keyframes confetti-fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .matrix-explanation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px;
+        }
+        .Matrix-explanation h4 { margin-bottom: 15px; font-size: 1.1rem; }
+        .Matrix-explanation ul { list-style: none; padding: 0; }
+        .Matrix-explanation li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .Matrix-explanation li:last-child { border-bottom: none; }
+        .Matrix-explanation i { margin-right: 10px; color: var(--secondary); }
+        .Matrix-visual {
+            background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 30px;
+        }
+        .Matrix-visual h3 { text-align: center; margin-bottom: 30px; color: var(--dark); }
+        .Tree-level { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        .Tree-node {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white; padding: 15px 25px; border-radius: 10px; text-align: center;
+            margin: 0 10px; min-width: 100px; position: relative;
+        }
+        .Tree-node.empty {
+            background: #e0e0e0; color: #999;
+        }
+        .Tree-node.you {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+        }
+        .Tree-connector {
+            width: 2px; height: 30px; background: var(--primary); margin: 0 auto;
+        }
+        .Tree-branch {
+            display: flex; justify-content: center; align-items: flex-start;
+            position: relative;
+        }
+        .Branch-line {
+            position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--primary);
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
     <nav id="navbar">
@@ -269,7 +305,7 @@
     <section id="home" class="section active">
         <div class="hero">
             <h1>Welcome to <span>HENBORYX</span> Empowerment</h1>
-            <p>Join our poverty eradication movement. Register with ₦3,000, invite others, and climb through stages to financial freedom.</p>
+            <p>Join our poverty eradication movement. Register with ₦3,000, invite 2 people , and climb through 5 stages!</p>
             <div class="hero-buttons">
                 <a href="#" class="btn btn-primary" onclick="showSection('register')"><i class="fas fa-rocket"></i> Start Your Journey</a>
                 <a href="#" class="btn btn-secondary" onclick="showSection('login')"><i class="fas fa-sign-in-alt"></i> Member Login</a>
@@ -278,8 +314,8 @@
         <div class="container">
             <div class="features">
                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-plus"></i></div><h3>Easy Registration</h3><p>Sign up with just your name and email. One-time payment of ₦3,000 to get started.</p></div>
-                <div class="feature-card"><div class="feature-icon"><i class="fas fa-link"></i></div><h3>Unique Referral Link</h3><p>Get your personal referral code instantly. Share with friends and family.</p></div>
-                <div class="feature-card"><div class="feature-icon"><i class="fas fa-trophy"></i></div><h3>Stage Progression</h3><p>Move from Stage 1 to higher levels as you invite more people. Unlimited earning potential.</p></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fas fa-sitemap"></i></div><h3>2×2 Matrix System</h3><p>You bring 2, they each bring 2 = 4 more. Total 6 people = Leave Starter!</p></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fas fa-trophy"></i></div><h3>5 Stage Progression</h3><p>Move from Starter to Stage 5 as your 2×2 matrix fills exponentially.</p></div>
                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt"></i></div><h3>Secure Payment</h3><p>Powered by Paystack. Your payment is secure and encrypted.</p></div>
             </div>
         </div>
@@ -287,18 +323,36 @@
 
     <section id="about" class="section">
         <div class="container" style="padding-top: 120px;">
-            <div class="feature-card" style="max-width: 800px; margin: 0 auto;">
+            <div class="feature-card" style="max-width: 900px; margin: 0 auto;">
                 <div class="feature-icon"><i class="fas fa-info-circle"></i></div>
-                <h2>About HENBORYX Empowerment</h2>
+                <h2>About HENBORYX Empowerment - 2×2 Matrix</h2>
                 <p style="text-align: left; margin-top: 20px; line-height: 1.8;">
-                    HENBORYX Empowerment is a community-driven poverty eradication platform designed to help individuals achieve financial independence through a simple, transparent referral system.<br><br>
-                    <strong>How it works:</strong><br>
-                    1. Register with a one-time fee of ₦3,000 (secure Paystack payment)<br>
-                    2. Receive your unique referral link<br>
-                    3. Invite 3 people to reach Stage 1<br>
-                    4. Continue inviting to reach higher stages<br>
-                    5. Earn rewards at every stage<br><br>
-                    Our mission is to create a sustainable ecosystem where everyone has the opportunity to succeed through collective effort and mutual support.
+                    HENBORYX Empowerment uses a revolutionary <strong>2×2 matrix system</strong> where everyone helps everyone succeed.<br><br>
+
+                    <strong>How The 2×2 Matrix Works:</strong><br>
+                    <div class="matrix-explanation">
+                        <ul>
+                            <li><i class="fas fa-user"></i> <strong>You</strong> register and bring <strong>2 people</strong> directly</li>
+                            <li><i class="fas fa-users"></i> Those <strong>2 people</strong> each bring <strong>2 people</strong> = 4 more</li>
+                            <li><i class="fas fa-calculator"></i> Your Total Network = <strong>6 people</strong> (2 + 4)</li>
+                            <li><i class="fas fa-star"></i> At 6 people, you leave <strong>Starter</strong> and enter <strong>Stage 1</strong></li>
+                            <li><i class="fas fa-sync-alt"></i> The Pattern Repeats: Those 6 people each do the same!</li>
+                        </ul>
+                    </div>
+
+                    <strong>Stage Requirements (2×2 Matrix):</strong><br>
+                    <div class="matrix-explanation">
+                        <ul>
+                            <li><i class="fas fa-play-circle"></i> <strong>Starter:</strong> 6 people total (your 2 + their 4)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 1:</strong> 36 people (6²)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 2:</strong> 216 people (6³)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 3:</strong> 1,296 people (6⁴)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 4:</strong> 7,776 people (6⁵)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 5:</strong> 46,656 People (6⁶)</li>
+                        </ul>
+                    </div>
+
+                    <strong style="color: var(--accent);"><i class="fas fa-key"></i> Key Rule:</strong> To advance to the next stage, ALL your direct referrals must have completed their own 2×2 matrix (6 people each) first!
                 </p>
             </div>
         </div>
@@ -324,7 +378,7 @@
         <div class="auth-container">
             <div class="auth-box">
                 <h2><i class="fas fa-user-plus"></i> Join HENBORYX</h2>
-                <p class="subtitle">Start your empowerment journey today</p>
+                <p class="subtitle">Start your 2×2 matrix journey today</p>
                 <div class="price-tag"><i class="fas fa-credit-card"></i>Registration Fee: ₦3,000 only<div class="secure-badge"><i class="fas fa-lock"></i><span>Secure Payment by Paystack</span></div></div>
                 <div class="payment-info"><i class="fas fa-info-circle"></i><strong>Important:</strong> You will be redirected to Paystack to complete your ₦3,000 payment before your account is created.</div>
                 <div class="error-message" id="registerError"></div>
@@ -347,28 +401,68 @@
     <section id="dashboard" class="section">
         <div class="dashboard">
             <div class="welcome-banner">
-                <div class="welcome-text"><h2>Hello, <span id="userName">User</span>! 👋</h2><p>Welcome to your empowerment dashboard</p></div>
-                <div class="user-badge"><i class="fas fa-crown"></i><span id="currentStage">Stage 0</span></div>
+                <div class="welcome-text"><h2>Hello, <span id="userName">User</span>! 👋</h2><p>Your 2×2 Matrix Dashboard</p></div>
+                <div class="user-badge"><i class="fas fa-crown"></i><span id="currentStage">Starter</span></div>
             </div>
+
+            <div class="matrix-explanation">
+                <h4><i class="fas fa-lightbulb"></i> Your 2×2 Matrix Progress</h4>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Need 2 direct referrals</li>
+                    <li><i class="fas fa-check-circle"></i> Each needs 2 referrals (4 total)</li>
+                    <li><i class="fas fa-check-circle"></i> Complete 6 People to Leave Starter!</li>
+                </ul>
+            </div>
+
+            <div class="matrix-visual">
+                <h3><i class="fas fa-project-diagram"></i> Your Network Structure</h3>
+                <div class="tree-level">
+                    <div class="tree-node you">YOU</div>
+                </div>
+                <div class="tree-connector"></div>
+                <div class="tree-level" id="level1Nodes">
+                    <div class="tree-node empty" id="slot1">Empty Slot</div>
+                    <div class="tree-node empty" id="slot2">Empty Slot</div>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 100px; margin-top: 10px;">
+                    <div class="tree-connector"></div>
+                    <div class="tree-connector"></div>
+                </div>
+                <div class="tree-level" id="Level2Nodes" style="gap: 20px;">
+                    <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
+                    <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
+                    <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
+                    <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
+                </div>
+                <p style="text-align: center; margin-top: 20px; color: #666;">
+                    <strong>Progress:</strong> <span id="MatrixProgress">0</span>/6 People to Complete Starter
+                </p>
+            </div>
+
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-number" id="totalReferrals">0</div><div class="stat-label">Total Referrals</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-number" id="currentLevel">0</div><div class="stat-label">Current Stage</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-bullseye"></i></div><div class="stat-number" id="nextTarget">3</div><div class="stat-label">Next Target</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-percentage"></i></div><div class="stat-number" id="progressPercent">0%</div><div class="stat-label">Progress</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-friends"></i></div><div class="stat-number" id="statDirect">0</div><div class="stat-label">Direct Referrals (Your 2)</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-number" id="statIndirect">0</div><div class="stat-label">Indirect Referrals (Their 4)</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-sitemap"></i></div><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Network Size</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-number" id="statStage">0</div><div class="stat-label">Current Stage</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-bullseye"></i></div><div class="stat-number" id="statTarget">6</div><div class="stat-label">Next Target (Complete 6)</div></div>
             </div>
+
             <div class="progress-section">
-                <div class="progress-header"><h3>Your Stage Progress</h3><p>Keep inviting to unlock higher stages!</p></div>
+                <div class="progress-header"><h3>Your Stage Progress</h3><p>Fill your 2×2 matrix at each stage to advance!</p></div>
                 <div class="stages-container">
                     <div class="stages-line"></div><div class="stages-progress" id="progressLine" style="width: 0%"></div>
-                    <div class="stage" id="stage1"><div class="stage-circle">1</div><div class="stage-label">Stage 1</div><div class="stage-requirement">3 People</div></div>
-                    <div class="stage" id="stage2"><div class="stage-circle">2</div><div class="stage-label">Stage 2</div><div class="stage-requirement">6 People</div></div>
-                    <div class="stage" id="stage3"><div class="stage-circle">3</div><div class="stage-label">Stage 3</div><div class="stage-requirement">12 People</div></div>
-                    <div class="stage" id="stage4"><div class="stage-circle">4</div><div class="stage-label">Stage 4</div><div class="stage-requirement">24 People</div></div>
+                    <div class="stage" id="stageStarter"><div class="stage-circle"><i class="fas fa-play"></i></div><div class="stage-label">Starter</div><div class="stage-requirement">6 People</div></div>
+                    <div class="stage" id="stage1"><div class="stage-circle">1</div><div class="stage-label">Stage 1</div><div class="stage-requirement">36 People</div></div>
+                    <div class="stage" id="Stage2"><div class="stage-circle">2</div><div class="stage-label">Stage 2</div><div class="stage-requirement">216 People</div></div>
+                    <div class="Stage" id="Stage3"><div class="stage-circle">3</div><div class="Stage-label">Stage 3</div><div class="Stage-requirement">1,296 People</div></div>
+                    <div class="Stage" id="Stage4"><div class="Stage-circle">4</div><div class="Stage-label">Stage 4</div><div class="Stage-requirement">7,776 People</div></div>
+                    <div class="Stage" id="Stage5"><div class="Stage-circle">5</div><div class="Stage-label">Stage 5</div><div class="Stage-requirement">46,656 People</div></div>
                 </div>
             </div>
+
             <div class="referral-section">
                 <h3><i class="fas fa-share-alt"></i> Your Referral Link</h3>
-                <p>Share this link with friends and family to grow your network</p>
+                <p>Share this link to get your 2 direct referrals</p>
                 <div class="referral-box"><span class="referral-link" id="referralLink">https://henboryx.com/ref/user123</span><button class="copy-btn" id="copyBtn" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy Link</button></div>
                 <div class="share-buttons">
                     <button class="share-btn whatsapp" onclick="shareWhatsApp()" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
@@ -377,18 +471,18 @@
                     <button class="share-btn telegram" onclick="shareTelegram()" title="Share on Telegram"><i class="fab fa-telegram-plane"></i></button>
                 </div>
             </div>
+
             <div class="referrals-list">
-                <h3><i class="fas fa-list"></i> Your Referrals</h3>
-                <div id="referralsContainer"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Start sharing your link!</p></div></div>
+                <h3><i class="fas fa-list"></i> Your Direct Referrals (<span id="directReferralCount">0</span>/2)</h3>
+                <div id="referralsContainer"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Share your link to get your first 2!</p></div></div>
             </div>
         </div>
     </section>
 
     <script>
         // ==================== CONFIGURATION ====================
-        // REPLACE THIS WITH YOUR PAYSTACK PUBLIC KEY
         const PAYSTACK_PUBLIC_KEY = 'pk_live_364f4564fcc6efbf39036a9fe8da3cefa545c4d2';
-        const REGISTRATION_AMOUNT = 300000; // ₦3,000 in kobo (3000 * 100)
+        const REGISTRATION_AMOUNT = 300000; // ₦3,000 in kobo
         // ======================================================
 
         let currentUser = null;
@@ -396,11 +490,21 @@
         let referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
         let pendingRegistration = null;
 
+        // 2×2 Matrix Stage System
+        // Stage 0 (Starter): Need 6 people total (2 direct + 4 indirect)
+        // Stage 1: Need 36 people (6 × 6)
+        // Stage 2: Need 216 people (36 × 6)
+        // Stage 3: Need 1,296 people (216 × 6)
+        // Stage 4: Need 7,776 People (1,296 × 6)
+        // Stage 5: Need 46,656 People (7,776 × 6)
+
         const stages = [
-            { level: 1, required: 3, name: 'Stage 1' },
-            { level: 2, required: 6, name: 'Stage 2' },
-            { level: 3, required: 12, name: 'Stage 3' },
-            { level: 4, required: 24, name: 'Stage 4' }
+            { level: 0, name: 'Starter', required: 6 },        // 2 + 4
+            { level: 1, name: 'Stage 1', required: 36 },     // 6²
+            { level: 2, name: 'Stage 2', required: 216 },    // 6³
+            { level: 3, name: 'Stage 3', required: 1296 },   // 6⁴
+            { level: 4, name: 'Stage 4', required: 7776 },    // 6⁵
+            { level: 5, name: 'Stage 5', required: 46656 }   // 6⁶
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -420,310 +524,467 @@
             if (sectionId === 'dashboard' && currentUser) updateDashboard();
         }
 
-        function checkLoggedInUser() {
-            const savedUser = localStorage.getItem('henboryx_current_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                updateNavigation();
-                showSection('dashboard');
-            }
+       function checkLoggedInUser() {
+    const savedUser = localStorage.getItem('henboryx_current_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateNavigation();
+        showSection('dashboard');
+    }
+}
+
+function updateNavigation() {
+    if (currentUser) {
+        document.getElementById('loginNav').style.display = 'none';
+        document.getElementById('registerNav').style.display = 'none';
+        document.getElementById('logoutNav').style.display = 'block';
+    } else {
+        document.getElementById('loginNav').style.display = 'block';
+        document.getElementById('registerNav').style.display = 'block';
+        document.getElementById('logoutNav').style.display = 'none';
+    }
+}
+
+function generateReferralCode() { return 'HBX' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+function generateReference() { return 'HBX_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+
+// Calculate network statistics
+function calculateNetworkStats(userCode) {
+    const directReferrals = referrals[userCode] || [];
+
+    // Count indirect Level 2
+    let indirectCount = 0;
+    for (const ref of directReferrals) {
+        const refUser = users.find(u => u.email === ref.email);
+        if (refUser && referrals[refUser.referralCode]) {
+            indirectCount += referrals[refUser.referralCode].length;
         }
+    }
 
-        function updateNavigation() {
-            if (currentUser) {
-                document.getElementById('loginNav').style.display = 'none';
-                document.getElementById('registerNav').style.display = 'none';
-                document.getElementById('logoutNav').style.display = 'block';
-            } else {
-                document.getElementById('loginNav').style.display = 'block';
-                document.getElementById('registerNav').style.display = 'block';
-                document.getElementById('logoutNav').style.display = 'none';
-            }
+    // Calculate total network (all descendants recursively)
+    const totalNetwork = calculateTotalNetwork(userCode);
+
+    return {
+        direct: directReferrals.length,
+        indirect: indirectCount,
+        total: totalNetwork,
+        directReferrals: directReferrals
+    };
+}
+
+// Calculate total network size (all descendants)
+function calculateTotalNetwork(userCode, visited = new Set()) {
+    if (visited.has(userCode)) return 0;
+    visited.add(userCode);
+
+    const directReferrals = referrals[userCode] || [];
+    let total = directReferrals.length;
+
+    for (const ref of directReferrals) {
+        const refUser = users.find(u => u.email === ref.email);
+        if (refUser) {
+            total += calculateTotalNetwork(refUser.referralCode, visited);
         }
+    }
 
-        function generateReferralCode() { return 'HBX' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
-        function generateReference() { return 'HBX_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
+    return total;
+}
 
-        function initiatePayment(e) {
-            e.preventDefault();
-            const btn = document.getElementById('registerBtn');
-            btn.classList.add('btn-loading');
+// Check if user can advance to next stage
+// For 2×2 matrix: Each direct referral must complete their own 2×2 (6 people) before you advance
+function canAdvanceStage(user, targetStage) {
+    const stats = calculateNetworkStats(user.referralCode);
 
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value.toLowerCase();
-            const phone = document.getElementById('regPhone').value;
-            const password = document.getElementById('regPassword').value;
-            const referrerCode = document.getElementById('regReferrer').value.toUpperCase();
+    // Check total network size requirement
+    if (stats.total < stages[targetStage].required) return false;
 
-            if (users.find(u => u.email === email)) {
-                showError('registerError', 'Email already registered. Please login.');
-                btn.classList.remove('btn-loading');
-                return;
-            }
+    // For Starter (stage 0), just need 6 people total
+    if (targetStage === 0) return stats.total >= 6;
 
-            pendingRegistration = { name: name, email: email, phone: phone, password: password, referrer: referrerCode };
-            document.getElementById('paymentModal').classList.add('active');
+    // For higher stages, check if each direct referral has completed their own matrix
+    // Each direct must have: 6, 36, 216, 1296, 7776 (based on their stage)
+    const directReferrals = referrals[user.referralCode] || [];
+    const requiredForEachDirect = stages[targetStage - 1]?.required || 6;
 
-            const paystackInstance = new PaystackPop();
-            paystackInstance.newTransaction({
-                key: PAYSTACK_PUBLIC_KEY,
-                email: email,
-                amount: REGISTRATION_AMOUNT,
-                currency: 'NGN',
-                ref: generateReference(),
-                metadata: {
-                    custom_fields: [
-                        { display_name: "Full Name", variable_name: "full_name", value: name },
-                        { display_name: "Phone Number", variable_name: "phone", value: phone },
-                        { display_name: "Platform", variable_name: "platform", value: "HENBORYX Empowerment" }
-                    ]
-                },
-                onSuccess: function(transaction) {
-                    document.getElementById('paymentModal').classList.remove('active');
-                    completeRegistration(transaction.reference);
-                },
-                onCancel: function() {
-                    document.getElementById('paymentModal').classList.remove('active');
-                    btn.classList.remove('btn-loading');
-                    showError('registerError', 'Payment was cancelled. Please try again.');
-                },
-                onError: function(error) {
-                    document.getElementById('paymentModal').classList.remove('active');
-                    btn.classList.remove('btn-loading');
-                    showError('registerError', 'Payment failed: ' + error.message);
-                }
-            });
+    for (const ref of directReferrals) {
+        const refUser = users.find(u => u.email === ref.email);
+        if (!refUser) continue;
+
+        const refStats = calculateNetworkStats(refUser.referralCode);
+        if (refStats.total < requiredForEachDirect) {
+            return false; // This direct hasn't completed their matrix
         }
+    }
 
-        function completeRegistration(paymentReference) {
-            if (!pendingRegistration) return;
-            const btn = document.getElementById('registerBtn');
+    return true;
+}
 
-            const newUser = {
-                id: Date.now(),
+function initiatePayment(e) {
+    e.preventDefault();
+    const btn = document.getElementById('registerBtn');
+    btn.classList.add('btn-loading');
+
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value.toLowerCase();
+    const phone = document.getElementById('regPhone').value;
+    const password = document.getElementById('regPassword').value;
+    const referrerCode = document.getElementById('regReferrer').value.toUpperCase();
+
+    if (users.find(u => u.email === email)) {
+        showError('registerError', 'Email already registered. Please login.');
+        btn.classList.remove('btn-loading');
+        return;
+    }
+
+    pendingRegistration = { name: name, email: email, phone: phone, password: password, referrer: referrerCode };
+    document.getElementById('paymentModal').classList.add('active');
+
+    const paystackInstance = new PaystackPop();
+    paystackInstance.newTransaction({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: email,
+        amount: REGISTRATION_AMOUNT,
+        currency: 'NGN',
+        ref: generateReference(),
+        metadata: {
+            custom_fields: [
+                { display_name: "Full Name", variable_name: "full_name", value: name },
+                { display_name: "Phone Number", variable_name: "phone", value: phone },
+                { display_name: "Platform", variable_name: "platform", value: "HENBORYX Empowerment" }
+            ]
+        },
+        onSuccess: function(transaction) {
+            document.getElementById('paymentModal').classList.remove('active');
+            completeRegistration(transaction.reference);
+        },
+        onCancel: function() {
+            document.getElementById('paymentModal').classList.remove('active');
+            btn.classList.remove('btn-loading');
+            showError('registerError', 'Payment was cancelled. Please try again.');
+        },
+        onError: function(error) {
+            document.getElementById('paymentModal').classList.remove('active');
+            btn.classList.remove('btn-loading');
+            showError('registerError', 'Payment failed: ' + error.message);
+        }
+    });
+}
+
+function completeRegistration(paymentReference) {
+    if (!pendingRegistration) return;
+    const btn = document.getElementById('registerBtn');
+
+    const newUser = {
+        id: Date.now(),
+        name: pendingRegistration.name,
+        email: pendingRegistration.email,
+        phone: pendingRegistration.phone,
+        password: pendingRegistration.password,
+        referralCode: generateReferralCode(),
+        referrer: pendingRegistration.referrer || null,
+        joinedDate: new Date().toISOString(),
+        stage: -1, // Not yet qualified as Starter
+        paymentStatus: 'paid',
+        paymentReference: paymentReference,
+        paymentAmount: 3000,
+        paymentDate: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    localStorage.setItem('henboryx_users', JSON.stringify(users));
+
+    referrals[newUser.referralCode] = [];
+    localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+
+    if (pendingRegistration.referrer) {
+        const referrer = users.find(u => u.referralCode === pendingRegistration.referrer);
+        if (referrer) {
+            if (!referrals[pendingRegistration.referrer]) referrals[pendingRegistration.referrer] = [];
+            referrals[pendingRegistration.referrer].push({
                 name: pendingRegistration.name,
                 email: pendingRegistration.email,
-                phone: pendingRegistration.phone,
-                password: pendingRegistration.password,
-                referralCode: generateReferralCode(),
-                referrer: pendingRegistration.referrer || null,
-                joinedDate: new Date().toISOString(),
-                stage: 0,
-                paymentStatus: 'paid',
-                paymentReference: paymentReference,
-                paymentAmount: 3000,
-                paymentDate: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            localStorage.setItem('henboryx_users', JSON.stringify(users));
-
-            referrals[newUser.referralCode] = [];
-            localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
-
-            if (pendingRegistration.referrer) {
-                const referrer = users.find(u => u.referralCode === pendingRegistration.referrer);
-                if (referrer) {
-                    if (!referrals[pendingRegistration.referrer]) referrals[pendingRegistration.referrer] = [];
-                    referrals[pendingRegistration.referrer].push({
-                        name: pendingRegistration.name,
-                        email: pendingRegistration.email,
-                        date: new Date().toISOString(),
-                        paymentStatus: 'paid'
-                    });
-                    localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
-                }
-            }
-
-            pendingRegistration = null;
-            document.getElementById('registerSuccess').style.display = 'block';
-            document.getElementById('registerSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Registration successful! Payment verified (Ref: ' + paymentReference + '). Redirecting to login...';
-            btn.classList.remove('btn-loading');
-
-            setTimeout(() => {
-                showSection('login');
-                document.getElementById('loginEmail').value = newUser.email;
-            }, 2000);
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            btn.classList.add('btn-loading');
-            setTimeout(() => {
-                const email = document.getElementById('loginEmail').value.toLowerCase();
-                const password = document.getElementById('loginPassword').value;
-                const user = users.find(u => u.email === email && u.password === password);
-                if (user) {
-                    currentUser = user;
-                    localStorage.setItem('henboryx_current_user', JSON.stringify(user));
-                    updateNavigation();
-                    btn.classList.remove('btn-loading');
-                    showSection('dashboard');
-                    createConfetti();
-                } else {
-                    showError('loginError', 'Invalid email or password.');
-                    btn.classList.remove('btn-loading');
-                }
-            }, 800);
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('henboryx_current_user');
-            updateNavigation();
-            showSection('home');
-        }
-
-        function updateDashboard() {
-            if (!currentUser) return;
-            document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
-            const myReferrals = referrals[currentUser.referralCode] || [];
-            const referralCount = myReferrals.length;
-
-            let currentStage = 0;
-            for (let i = stages.length - 1; i >= 0; i--) {
-                if (referralCount >= stages[i].required) { currentStage = stages[i].level; break; }
-            }
-
-            currentUser.stage = currentStage;
-            localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
-
-            document.getElementById('totalReferrals').textContent = referralCount;
-            document.getElementById('currentLevel').textContent = currentStage;
-            document.getElementById('currentStage').textContent = currentStage > 0 ? 'Stage ' + currentStage : 'New Member';
-
-            let nextTarget = stages[0].required;
-            let progressPercent = 0;
-            if (currentStage < stages.length) {
-                nextTarget = stages[currentStage].required;
-                const prevRequired = currentStage > 0 ? stages[currentStage - 1].required : 0;
-                const progressInStage = referralCount - prevRequired;
-                const stageRange = nextTarget - prevRequired;
-                progressPercent = Math.round((progressInStage / stageRange) * 100);
-            } else {
-                nextTarget = 'Max';
-                progressPercent = 100;
-            }
-
-            document.getElementById('nextTarget').textContent = nextTarget;
-            document.getElementById('progressPercent').textContent = progressPercent + '%';
-            updateStagesVisual(referralCount);
-
-            const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
-            document.getElementById('referralLink').textContent = refLink;
-            updateReferralsList(myReferrals);
-        }
-
-        function updateStagesVisual(referralCount) {
-            stages.forEach((stage, index) => {
-                const stageEl = document.getElementById('stage' + stage.level);
-                if (referralCount >= stage.required) {
-                    stageEl.classList.add('completed');
-                    stageEl.classList.remove('current');
-                } else if (index === 0 || referralCount >= stages[index - 1].required) {
-                    stageEl.classList.add('current');
-                    stageEl.classList.remove('completed');
-                } else {
-                    stageEl.classList.remove('completed', 'current');
-                }
+                date: new Date().toISOString(),
+                paymentStatus: 'paid'
             });
+            localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+        }
+    }
 
-            let progressWidth = 0;
-            if (referralCount >= stages[stages.length - 1].required) {
-                progressWidth = 100;
-            } else if (referralCount === 0) {
-                progressWidth = 0;
-            } else {
-                for (let i = 0; i < stages.length; i++) {
-                    if (referralCount < stages[i].required) {
-                        const prevRequired = i > 0 ? stages[i - 1].required : 0;
-                        const range = stages[i].required - prevRequired;
-                        const progress = referralCount - prevRequired;
-                        const segmentWidth = 100 / (stages.length - 1);
-                        progressWidth = (i * segmentWidth) + ((progress / range) * segmentWidth);
-                        break;
+    pendingRegistration = null;
+    document.getElementById('registerSuccess').style.display = 'block';
+    document.getElementById('registerSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Registration successful! Payment verified (Ref: ' + paymentReference + '). Redirecting to login...';
+    btn.classList.remove('btn-loading');
+
+    setTimeout(() => {
+        showSection('login');
+        document.getElementById('loginEmail').value = newUser.email;
+    }, 2000);
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.classList.add('btn-loading');
+    setTimeout(() => {
+        const email = document.getElementById('loginEmail').value.toLowerCase();
+        const password = document.getElementById('loginPassword').value;
+        const user = users.find(u => u.email === email && u.password === password);
+        if (user) {
+            currentUser = user;
+            localStorage.setItem('henboryx_current_user', JSON.stringify(user));
+            updateNavigation();
+            btn.classList.remove('btn-loading');
+            showSection('dashboard');
+            createConfetti();
+        } else {
+            showError('loginError', 'Invalid email or password.');
+            btn.classList.remove('btn-loading');
+        }
+    }, 800);
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('henboryx_current_user');
+    updateNavigation();
+    showSection('home');
+}
+
+function updateDashboard() {
+    if (!currentUser) return;
+    document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+
+    const stats = calculateNetworkStats(currentUser.referralCode);
+    const directReferrals = referrals[currentUser.referralCode] || [];
+
+    // Determine current stage
+    let currentStage = -1;
+    for (let i = stages.length - 1; i >= 0; i--) {
+        if (canAdvanceStage(currentUser, i)) {
+            currentStage = i;
+            break;
+        }
+    }
+
+    currentUser.stage = currentStage;
+    localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
+
+    // Update matrix visual
+    updateMatrixVisual(stats.directReferrals);
+    document.getElementById('matrixProgress').textContent = stats.total;
+
+    // Update stats
+    document.getElementById('statDirect').textContent = stats.direct;
+    document.getElementById('statIndirect').textContent = stats.indirect;
+    document.getElementById('statTotal').textContent = stats.total.toLocaleString();
+    document.getElementById('statStage').textContent = currentStage >= 0 ? currentStage : '-';
+
+    const stageDisplay = currentStage === -1 ? 'New Member' : 
+                        currentStage === 0 ? 'Starter' : 'Stage ' + currentStage;
+    document.getElementById('currentStage').textContent = stageDisplay;
+
+    // Next target
+    let nextTarget, progressPercent;
+    if (currentStage < 5) {
+        const nextStageIdx = currentStage + 1;
+        nextTarget = stages[nextStageIdx].required.toLocaleString();
+        const prevRequired = currentStage >= 0 ? stages[currentStage].required : 0;
+        const range = nextTarget - prevRequired;
+        const progress = stats.total - prevRequired;
+        progressPercent = Math.max(0, Math.min(100, Math.round((progress / range) * 100)));
+    } else {
+        nextTarget = 'Max';
+        progressPercent = 100;
+    }
+
+    document.getElementById('statTarget').textContent = nextTarget;
+
+    updateStagesVisual(currentStage, stats.total);
+
+    const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
+    document.getElementById('referralLink').textContent = refLink;
+
+    document.getElementById('directReferralCount').textContent = stats.direct;
+    updateReferralsList(stats.directReferrals);
+}
+
+function updateMatrixVisual(directReferrals) {
+    // Update level 1 (direct referrals)
+    const slot1 = document.getElementById('slot1');
+    const slot2 = document.getElementById('slot2');
+
+    if (directReferrals[0]) {
+        const initials1 = directReferrals[0].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        slot1.textContent = initials1;
+        slot1.classList.remove('empty');
+    } else {
+        slot1.textContent = 'Empty';
+        slot1.classList.add('empty');
+    }
+
+    if (directReferrals[1]) {
+        const initials2 = directReferrals[1].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        slot2.textContent = initials2;
+        slot2.classList.remove('empty');
+    } else {
+        slot2.textContent = 'Empty';
+        slot2.classList.add('empty');
+    }
+
+    // Update level 2 (indirect referrals)
+    const level2Container = document.getElementById('level2Nodes');
+    let level2HTML = '';
+    let level2Count = 0;
+
+    for (let i = 0; i < 2; i++) {
+        if (directReferrals[i]) {
+            const refUser = users.find(u => u.email === directReferrals[i].email);
+            if (refUser && referrals[refUser.referralCode]) {
+                const indirects = referrals[refUser.referralCode];
+                for (let j = 0; j < 2; j++) {
+                    if (indirects[j]) {
+                        const initials = indirects[j].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                        level2HTML += '<div class="tree-node">' + initials + '</div>';
+                        level2Count++;
+                    } else {
+                        level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
                     }
                 }
+            } else {
+                level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
             }
-            document.getElementById('progressLine').style.width = progressWidth + '%';
+        } else {
+            level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
         }
+    }
 
-        function updateReferralsList(myReferrals) {
-            const container = document.getElementById('referralsContainer');
-            if (myReferrals.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Start sharing your link!</p></div>';
-                return;
-            }
-            let html = '';
-            myReferrals.forEach((ref, index) => {
-                const date = new Date(ref.date).toLocaleDateString();
-                const initials = ref.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                html += '<div class="referral-item"><div class="referral-info"><div class="referral-avatar">' + initials + '</div><div class="referral-details"><h4>' + ref.name + '</h4><p>' + ref.email + ' • Joined ' + date + '</p></div></div><span class="referral-status status-active">Active</span></div>';
-            });
-            container.innerHTML = html;
+    level2Container.innerHTML = level2HTML;
+}
+
+function updateStagesVisual(currentStage, totalNetwork) {
+    // Starter stage
+    const starterEl = document.getElementById('stageStarter');
+    if (currentStage >= 0) {
+        starterEl.classList.add('completed');
+        starterEl.classList.remove('current');
+    } else {
+        starterEl.classList.add('current');
+        starterEl.classList.remove('completed');
+    }
+
+    // Other stages
+    for (let i = 1; i <= 5; i++) {
+        const stageEl = document.getElementById('stage' + i);
+        if (currentStage >= i) {
+            stageEl.classList.add('completed');
+            stageEl.classList.remove('current');
+        } else if (currentStage === i - 1) {
+            stageEl.classList.add('current');
+            stageEl.classList.remove('completed');
+        } else {
+            stageEl.classList.remove('completed', 'current');
         }
+    }
 
-        function copyReferralLink() {
-            const link = document.getElementById('referralLink').textContent;
-            navigator.clipboard.writeText(link).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
+    // Progress line
+    let progressWidth = 0;
+    if (currentStage >= 5) {
+        progressWidth = 100;
+    } else if (currentStage === -1) {
+        progressWidth = Math.min(100, (totalNetwork / 6) * (100/6));
+    } else {
+        const segmentWidth = 100 / 6;
+        progressWidth = (currentStage + 1) * segmentWidth;
+        const nextReq = stages[currentStage + 1]?.required || stages[5].required;
+        const currReq = stages[currentStage].required;
+        const range = nextReq - currReq;
+        const progress = totalNetwork - currReq;
+        const partial = (progress / range) * segmentWidth;
+        progressWidth += Math.max(0, partial);
+    }
+    document.getElementById('progressLine').style.width = Math.min(100, progressWidth) + '%';
+}
 
-        function shareWhatsApp() {
-            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-            const text = encodeURIComponent('Join me on HENBORYX Empowerment! Register with ₦3,000 and start your journey to financial freedom. Use my referral link: ');
-            window.open('https://wa.me/?text=' + text + link, '_blank');
-        }
+function updateReferralsList(directReferrals) {
+    const container = document.getElementById('referralsContainer');
+    if (directReferrals.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Share your link to get your first 2!</p></div>';
+        return;
+    }
+    let html = '';
+    directReferrals.forEach((ref, index) => {
+        const date = new Date(ref.date).toLocaleDateString();
+        const initials = ref.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const refUser = users.find(u => u.email === ref.email);
+        const refStats = refUser ? calculateNetworkStats(refUser.referralCode) : { total: 0 };
+        const refStage = refUser ? (refUser.stage >= 0 ? 'Stage ' + refUser.stage : 'New') : 'New';
+        const matrixStatus = refStats.total >= 6 ? '✓ Matrix Complete' : refStats.total + '/6';
 
-        function shareFacebook() {
-            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-            window.open('https://www.facebook.com/sharer/sharer.php?u=' + link, '_blank');
-        }
+        html += '<div class="referral-item"><div class="referral-info"><div class="referral-avatar">' + initials + '</div><div class="referral-details"><h4>' + ref.name + '</h4><p>' + ref.email + ' • ' + matrixStatus + '</p></div></div><span class="referral-status status-active">' + refStage + '</span></div>';
+    });
+    container.innerHTML = html;
+}
 
-        function shareTwitter() {
-            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-            const text = encodeURIComponent('Join HENBORYX Empowerment! Poverty eradication platform. Register with ₦3,000. My referral link:');
-            window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + link, '_blank');
-        }
+function copyReferralLink() {
+    const link = document.getElementById('referralLink').textContent;
+    navigator.clipboard.writeText(link).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
+            btn.classList.remove('copied');
+        }, 2000);
+    });
+}
 
-        function shareTelegram() {
-            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-            const text = encodeURIComponent('Join me on HENBORYX Empowerment!');
-            window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
-        }
+function shareWhatsApp() {
+    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+    const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix - bring 2 who bring 2. Register with ₦3,000. Use my link: ');
+    window.open('https://wa.me/?text=' + text + link, '_blank');
+}
 
-        function showError(elementId, message) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 5000);
-        }
+function shareFacebook() {
+    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + link, '_blank');
+}
 
-        function createConfetti() {
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = ['#f4a261', '#e76f51', '#2a9d8f', '#e9c46a'][Math.floor(Math.random() * 4)];
-                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-                document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 4000);
-            }
-        }
+function shareTwitter() {
+    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+    const text = encodeURIComponent('Join HENBORYX Empowerment! 2×2 matrix system - You bring 2, they bring 2. Register with ₦3,000. My link:');
+    window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + link, '_blank');
+}
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.error-message')) {
-                document.querySelectorAll('.error-message').forEach(el => { el.style.display = 'none'; });
-            }
-        });
+function shareTelegram() {
+    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+    const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix system');
+    window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
+}
+
+function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+function createConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = ['#f4a261', '#e76f51', '#2a9d8f', '#e9c46a'][Math.floor(Math.random() * 4)];
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 4000);
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.error-message')) {
+        document.querySelectorAll('.error-message').forEach(el => { el.style.display = 'none'; });
+    }
+});
     </script>
 </body>
 </html>
