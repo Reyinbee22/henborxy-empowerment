@@ -1,12 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Paystack Integration - REPLACE your current one with this -->
+<script src="https://js.paystack.co/v2/inline.js"></script>
+<script>
+    // Paystack Configuration - REPLACE with your actual public key from paystack.com
+    const PAYSTACK_PUBLIC_KEY = 'pk_test_7783ce1a4ff79c21b631ff4c867df8fefff9c089'; // Test mode
+    // const PAYSTACK_PUBLIC_KEY = 'pk_live_your_actual_key_here'; // Live mode (when ready)
+    
+    /**
+     * Initialize Paystack payment for registration
+     */
+    function payWithPaystack(userData, onSuccess) {
+        const paystack = new PaystackPop();
+        
+        const reference = 'HBR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        
+        paystack.newTransaction({
+            key: PAYSTACK_PUBLIC_KEY,
+            email: userData.email || userData.username + '@henboryx.com', // Use username@domain if no email
+            amount: 3000 * 100, // ₦3,500 in kobo (multiply by 100)
+            reference: reference,
+            currency: 'NGN',
+            metadata: {
+                custom_fields: [
+                    { display_name: "Full Name", variable_name: "full_name", value: userData.name },
+                    { display_name: "Username", variable_name: "username", value: userData.username },
+                    { display_name: "Phone", variable_name: "phone", value: userData.phone }
+                ]
+            },
+            onSuccess: function(transaction) {
+                // Payment successful
+                console.log('Paystack success:', transaction);
+                
+                // Update user data
+                userData.paymentStatus = 'paid';
+                userData.paymentReference = transaction.reference;
+                userData.paymentAmount = 3000;
+                userData.paymentDate = new Date().toISOString();
+                
+                // Execute callback
+                onSuccess(transaction);
+            },
+            onCancel: function() {
+                alert('Payment cancelled. Complete payment to activate your account.');
+            },
+            onError: function(error) {
+                console.error('Paystack error:', error);
+                alert('Payment failed: ' + error.message);
+            }
+        });
+    }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HENBORYX Empowerment</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://js.paystack.co/v2/inline.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -32,15 +83,20 @@
         .logo {
             font-size: 1.8rem; font-weight: 700; color: var(--primary);
             text-decoration: none; display: flex; align-items: center; gap: 10px;
+            cursor: pointer;
         }
         .logo i { color: var(--secondary); }
         .nav-links { display: flex; gap: 30px; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.3s; }
+        .nav-links a { 
+            text-decoration: none; color: var(--dark); font-weight: 500; 
+            transition: color 0.3s; cursor: pointer; background: none; border: none;
+            font-family: 'Poppins', sans-serif; font-size: 1rem;
+        }
         .nav-links a:hover { color: var(--primary); }
         .btn {
             padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer;
             font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
-            text-decoration: none; display: inline-block;
+            text-decoration: none; display: inline-block; font-family: 'Poppins', sans-serif;
         }
         .btn-primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
@@ -54,6 +110,14 @@
             font-size: 1.1rem; padding: 15px 40px; width: 100%; margin-top: 10px;
         }
         .btn-payment:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); }
+        .btn-withdraw {
+            background: linear-gradient(135deg, var(--accent) 0%, #d63031 100%);
+            color: white; padding: 15px 30px; font-size: 1.1rem;
+        }
+        .btn-withdraw:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(231, 111, 81, 0.4); }
+        .btn-withdraw:disabled {
+            background: #ccc; cursor: not-allowed; transform: none; box-shadow: none;
+        }
         .section {
             display: none; animation: fadeIn 0.5s ease; padding-top: 100px; min-height: 100vh;
         }
@@ -103,6 +167,7 @@
             font-size: 1rem; transition: border-color 0.3s; font-family: 'Poppins', sans-serif;
         }
         .form-group input:focus { outline: none; border-color: var(--primary); }
+        .form-group small { color: #888; font-size: 0.8rem; display: block; margin-top: 5px; }
         .price-tag {
             background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%); color: white;
             padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 25px;
@@ -153,6 +218,57 @@
             background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 50px;
             display: flex; align-items: center; gap: 10px;
         }
+        
+        /* Cash Winnings Display */
+        .winnings-banner {
+            background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+            color: white; padding: 30px; border-radius: 20px; margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+        }
+        .winnings-info h3 { font-size: 1.2rem; margin-bottom: 5px; opacity: 0.9; }
+        .winnings-amount { font-size: 3rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .winnings-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        .withdrawal-status {
+            background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* Withdrawal Modal */
+        .withdrawal-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;
+        }
+        .withdrawal-modal.active { display: flex; }
+        .withdrawal-content {
+            background: white; padding: 40px; border-radius: 20px; max-width: 500px;
+            width: 90%; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease;
+        }
+        .withdrawal-content h3 { color: var(--dark); margin-bottom: 20px; text-align: center; }
+        .withdrawal-amount {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white; padding: 20px; border-radius: 15px; text-align: center;
+            margin-bottom: 25px; font-size: 1.5rem; font-weight: 700;
+        }
+        .bank-form { margin-top: 20px; }
+        
+        /* Withdrawal History */
+        .withdrawal-history {
+            background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow);
+            margin-top: 30px;
+        }
+        .withdrawal-history h3 { color: var(--dark); margin-bottom: 20px; }
+        .withdrawal-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; border-bottom: 1px solid #eee;
+        }
+        .withdrawal-item:last-child { border-bottom: none; }
+        .withdrawal-details h4 { color: var(--dark); font-size: 1rem; }
+        .withdrawal-details p { color: #888; font-size: 0.85rem; }
+        .withdrawal-amount-small { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+        .status-completed { background: #e8f5e9; color: #2e7d32; padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; }
+        .status-pending { background: #fff3e0; color: #ef6c00; padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; }
+        
         .stats-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px; margin-bottom: 30px;
@@ -192,9 +308,9 @@
         .stage.current .stage-circle { background: var(--secondary); color: white; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(244, 162, 97, 0.4); } 50% { box-shadow: 0 0 0 15px rgba(244, 162, 97, 0); } }
         .stage-label { font-weight: 600; color: var(--dark); font-size: 0.85rem; }
-        .stage-requirement { font-size: 0.75rem; color: #888; margin-top: 5px; }
+        .stage-reward { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-top: 3px; }
         .referral-section { background: white; padding: 40px; border-radius: 20px; box-shadow: var(--shadow); text-align: center; }
-        .Referral-section h3 { color: var(--dark); margin-bottom: 20px; font-size: 1.5rem; }
+        .referral-section h3 { color: var(--dark); margin-bottom: 20px; font-size: 1.5rem; }
         .referral-box {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 30px; border-radius: 15px; margin: 20px 0; border: 2px dashed var(--primary);
@@ -206,37 +322,39 @@
             display: inline-flex; align-items: center; gap: 10px;
         }
         .copy-btn:hover { background: var(--primary-light); transform: translateY(-2px); }
-        .Copy-btn.copied { background: #28a745; }
+        .copy-btn.copied { background: #28a745; }
         .share-buttons { margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .share-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.3rem; color: white; transition: transform 0.3s; }
         .share-btn:hover { transform: scale(1.1); }
-        .Share-btn.whatsapp { background: #25d366; }
+        .share-btn.whatsapp { background: #25d366; }
         .share-btn.facebook { background: #1877f2; }
-        .Share-btn.twitter { background: #1da1f2; }
-        .Share-btn.telegram { background: #0088cc; }
-        .Referrals-list { background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-top: 30px; }
-        .Referrals-list h3 { color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .Referral-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
-        .Referral-item:hover { background: #f8f9fa; border-radius: 10px; }
-        .Referral-info { display: flex; align-items: center; gap: 15px; }
-        .Referral-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
-        .Referral-details h4 { color: var(--dark); font-size: 1rem; }
-        .Referral-details p { color: #888; font-size: 0.85rem; }
-        .Referral-status { padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; }
-        .Status-active { background: #e8f5e9; color: #2e7d32; }
-        .Status-pending { background: #fff3e0; color: #ef6c00; }
-        .Empty-state { text-align: center; padding: 40px; color: #888; }
-        .Empty-state i { font-size: 3rem; margin-bottom: 15px; color: #ddd; }
-        .Logout-btn { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .Logout-btn:hover { background: var(--accent); color: white; }
+        .share-btn.twitter { background: #1da1f2; }
+        .share-btn.telegram { background: #0088cc; }
+        .referrals-list { background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-top: 30px; }
+        .referrals-list h3 { color: var(--dark); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .referral-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
+        .referral-item:hover { background: #f8f9fa; border-radius: 10px; }
+        .referral-info { display: flex; align-items: center; gap: 15px; }
+        .referral-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .referral-details h4 { color: var(--dark); font-size: 1rem; }
+        .referral-details p { color: #888; font-size: 0.85rem; }
+        .referral-status { padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; }
+        .status-active { background: #e8f5e9; color: #2e7d32; }
+        .status-pending { background: #fff3e0; color: #ef6c00; }
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #ddd; }
+        .logout-btn { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-family: 'Poppins', sans-serif; font-size: 1rem; }
+        .logout-btn:hover { background: var(--accent); color: white; }
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .nav-links { gap: 15px; }
             .auth-box { padding: 30px 20px; }
             .welcome-banner { text-align: center; justify-content: center; }
+            .winnings-banner { text-align: center; justify-content: center; }
+            .winnings-actions { align-items: center; width: 100%; }
             .stages-container { flex-direction: column; gap: 20px; }
             .stages-line, .stages-progress { display: none; }
-            .Stage { width: 100%; }
+            .stage { width: 100%; }
         }
         .spinner {
             display: none; width: 20px; height: 20px; border: 3px solid #f3f3f3;
@@ -254,49 +372,67 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; padding: 25px; border-radius: 15px; margin-bottom: 30px;
         }
-        .Matrix-explanation h4 { margin-bottom: 15px; font-size: 1.1rem; }
-        .Matrix-explanation ul { list-style: none; padding: 0; }
-        .Matrix-explanation li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .Matrix-explanation li:last-child { border-bottom: none; }
-        .Matrix-explanation i { margin-right: 10px; color: var(--secondary); }
-        .Matrix-visual {
+        .matrix-explanation h4 { margin-bottom: 15px; font-size: 1.1rem; }
+        .matrix-explanation ul { list-style: none; padding: 0; }
+        .matrix-explanation li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .matrix-explanation li:last-child { border-bottom: none; }
+        .matrix-explanation i { margin-right: 10px; color: var(--secondary); }
+        .matrix-visual {
             background: white; padding: 30px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 30px;
         }
-        .Matrix-visual h3 { text-align: center; margin-bottom: 30px; color: var(--dark); }
-        .Tree-level { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
-        .Tree-node {
+        .matrix-visual h3 { text-align: center; margin-bottom: 30px; color: var(--dark); }
+        .tree-level { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
+        .tree-node {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white; padding: 15px 25px; border-radius: 10px; text-align: center;
             margin: 0 10px; min-width: 100px; position: relative;
         }
-        .Tree-node.empty {
+        .tree-node.empty {
             background: #e0e0e0; color: #999;
         }
-        .Tree-node.you {
+        .tree-node.you {
             background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
         }
-        .Tree-connector {
+        .tree-connector {
             width: 2px; height: 30px; background: var(--primary); margin: 0 auto;
         }
-        .Tree-branch {
+        .tree-branch {
             display: flex; justify-content: center; align-items: flex-start;
             position: relative;
         }
-        .Branch-line {
+        .branch-line {
             position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--primary);
+        }
+        
+        /* Notification Styles */
+        .notification {
+            position: fixed; top: 100px; right: 20px; background: white;
+            padding: 20px; border-radius: 15px; box-shadow: var(--shadow-hover);
+            max-width: 350px; z-index: 10000; animation: slideInRight 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+        @keyframes slideInRight { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .notification.success { border-left-color: #00b894; }
+        .notification.error { border-left-color: var(--accent); }
+        .notification h4 { color: var(--dark); margin-bottom: 8px; font-size: 1rem; }
+        .notification p { color: #666; font-size: 0.9rem; }
+        .notification-close {
+            position: absolute; top: 10px; right: 10px; background: none; border: none;
+            color: #999; cursor: pointer; font-size: 1.2rem;
         }
     </style>
 
+<base target="_blank">
 </head>
 <body>
     <nav id="navbar">
         <div class="nav-container">
-            <a href="#" class="logo" onclick="showSection('home')"><i class="fas fa-hands-holding-circle"></i>HENBORYX</a>
+            <a href="#" class="logo" onclick="navigateTo('home'); return false;"><i class="fas fa-hands-holding-circle"></i>HENBORYX</a>
             <div class="nav-links" id="navLinks">
-                <a href="#" onclick="showSection('home')">Home</a>
-                <a href="#" onclick="showSection('about')">About</a>
-                <a href="#" onclick="showSection('login')" id="loginNav">Login</a>
-                <a href="#" onclick="showSection('register')" class="btn btn-primary" id="registerNav">Get Started</a>
+                <a href="#" onclick="navigateTo('home'); return false;">Home</a>
+                <a href="#" onclick="navigateTo('about'); return false;">About</a>
+                <a href="#" onclick="navigateTo('login'); return false;" id="loginNav">Login</a>
+                <a href="#" onclick="navigateTo('register'); return false;" class="btn btn-primary" id="registerNav" style="padding: 10px 25px;">Get Started</a>
                 <button class="logout-btn" id="logoutNav" style="display:none" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </div>
@@ -305,16 +441,16 @@
     <section id="home" class="section active">
         <div class="hero">
             <h1>Welcome to <span>HENBORYX</span> Empowerment</h1>
-            <p>Join our poverty eradication movement. Register with ₦3,000, invite 2 people , and climb through 5 stages!</p>
+            <p>Join our poverty eradication movement. Register with ₦3,000, invite 2 people, and climb through 5 stages!</p>
             <div class="hero-buttons">
-                <a href="#" class="btn btn-primary" onclick="showSection('register')"><i class="fas fa-rocket"></i> Start Your Journey</a>
-                <a href="#" class="btn btn-secondary" onclick="showSection('login')"><i class="fas fa-sign-in-alt"></i> Member Login</a>
+                <a href="#" class="btn btn-primary" onclick="navigateTo('register'); return false;"><i class="fas fa-rocket"></i> Start Your Journey</a>
+                <a href="#" class="btn btn-secondary" onclick="navigateTo('login'); return false;"><i class="fas fa-sign-in-alt"></i> Member Login</a>
             </div>
         </div>
         <div class="container">
             <div class="features">
-                <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-plus"></i></div><h3>Easy Registration</h3><p>Sign up with just your name and email. One-time payment of ₦3,000 to get started.</p></div>
-                <div class="feature-card"><div class="feature-icon"><i class="fas fa-sitemap"></i></div><h3>2×2 Matrix System</h3><p>You bring 2, they each bring 2 = 4 more. Total 6 people = Leave Starter!</p></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-plus"></i></div><h3>Easy Registration</h3><p>Sign up with just your name and username. One-time payment of ₦3,000 to get started.</p></div>
+                <div class="feature-card"><div class="feature-icon"><i class="fas fa-sitemap"></i></div><h3>2×2 Matrix System</h3><p>You bring 2, they each bring 2 = 4 more. Total 6 people = Leave Starter and enter Stage 1!</p></div>
                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-trophy"></i></div><h3>5 Stage Progression</h3><p>Move from Starter to Stage 5 as your 2×2 matrix fills exponentially.</p></div>
                 <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-alt"></i></div><h3>Secure Payment</h3><p>Powered by Paystack. Your payment is secure and encrypted.</p></div>
             </div>
@@ -326,34 +462,34 @@
             <div class="feature-card" style="max-width: 900px; margin: 0 auto;">
                 <div class="feature-icon"><i class="fas fa-info-circle"></i></div>
                 <h2>About HENBORYX Empowerment - 2×2 Matrix</h2>
-                <p style="text-align: left; margin-top: 20px; line-height: 1.8;">
-                    HENBORYX Empowerment uses a revolutionary <strong>2×2 matrix system</strong> where everyone helps everyone succeed.<br><br>
+                <div style="text-align: left; margin-top: 20px; line-height: 1.8; color: #666;">
+                    <p>HENBORYX Empowerment uses a revolutionary <strong>2×2 matrix system</strong> where everyone helps everyone succeed.</p><br>
 
                     <strong>How The 2×2 Matrix Works:</strong><br>
                     <div class="matrix-explanation">
                         <ul>
                             <li><i class="fas fa-user"></i> <strong>You</strong> register and bring <strong>2 people</strong> directly</li>
                             <li><i class="fas fa-users"></i> Those <strong>2 people</strong> each bring <strong>2 people</strong> = 4 more</li>
-                            <li><i class="fas fa-calculator"></i> Your Total Network = <strong>6 people</strong> (2 + 4)</li>
+                            <li><i class="fas fa-calculator"></i> Your Total Network = <strong>6 people</strong></li>
                             <li><i class="fas fa-star"></i> At 6 people, you leave <strong>Starter</strong> and enter <strong>Stage 1</strong></li>
                             <li><i class="fas fa-sync-alt"></i> The Pattern Repeats: Those 6 people each do the same!</li>
                         </ul>
                     </div>
 
-                    <strong>Stage Requirements (2×2 Matrix):</strong><br>
+                    <strong>Stage Rewards:</strong><br>
                     <div class="matrix-explanation">
                         <ul>
-                            <li><i class="fas fa-play-circle"></i> <strong>Starter:</strong> 6 people total (your 2 + their 4)</li>
-                            <li><i class="fas fa-layer-group"></i> <strong>Stage 1:</strong> 36 people (6²)</li>
-                            <li><i class="fas fa-layer-group"></i> <strong>Stage 2:</strong> 216 people (6³)</li>
-                            <li><i class="fas fa-layer-group"></i> <strong>Stage 3:</strong> 1,296 people (6⁴)</li>
-                            <li><i class="fas fa-layer-group"></i> <strong>Stage 4:</strong> 7,776 people (6⁵)</li>
-                            <li><i class="fas fa-layer-group"></i> <strong>Stage 5:</strong> 46,656 People (6⁶)</li>
+                            <li><i class="fas fa-play-circle"></i> <strong>Starter:</strong> ₦3,000 (Full amount withdrawable)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 1:</strong> ₦25,000 (₦7,500 withdrawable, 70% food reward)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 2:</strong> ₦50,000 (₦15,000 withdrawable, 70% food reward)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 3:</strong> ₦100,000 (₦30,000 withdrawable, 70% food reward)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 4:</strong> ₦250,000 (₦75,000 withdrawable, 70% food reward)</li>
+                            <li><i class="fas fa-layer-group"></i> <strong>Stage 5:</strong> ₦500,000 (₦150,000 withdrawable, 70% food reward)</li>
                         </ul>
                     </div>
 
-                    <strong style="color: var(--accent);"><i class="fas fa-key"></i> Key Rule:</strong> To advance to the next stage, ALL your direct referrals must have completed their own 2×2 matrix (6 people each) first!
-                </p>
+                    <strong style="color: var(--accent);"><i class="fas fa-key"></i> Key Rule:</strong> To advance to the next stage, ALL your direct referrals must have completed their own 2×2 matrix first!
+                </div>
             </div>
         </div>
     </section>
@@ -362,14 +498,17 @@
         <div class="auth-container">
             <div class="auth-box">
                 <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
-                <p class="subtitle">Login to access your dashboard</p>
+                <p class="subtitle">Login with your username or email</p>
                 <div class="error-message" id="loginError"></div>
                 <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="form-group"><label><i class="fas fa-envelope"></i> Email Address</label><input type="email" id="loginEmail" required placeholder="Enter your email"></div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Username or Email</label>
+                        <input type="text" id="loginUsername" required placeholder="Enter username or email">
+                    </div>
                     <div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="loginPassword" required placeholder="Enter your password"></div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;" id="loginBtn">Login<div class="spinner"></div></button>
                 </form>
-                <div class="auth-footer">Don't have an account? <a onclick="showSection('register')">Register here</a></div>
+                <div class="auth-footer">Don't have an account? <a onclick="navigateTo('register')">Register here</a></div>
             </div>
         </div>
     </section>
@@ -380,36 +519,83 @@
                 <h2><i class="fas fa-user-plus"></i> Join HENBORYX</h2>
                 <p class="subtitle">Start your 2×2 matrix journey today</p>
                 <div class="price-tag"><i class="fas fa-credit-card"></i>Registration Fee: ₦3,000 only<div class="secure-badge"><i class="fas fa-lock"></i><span>Secure Payment by Paystack</span></div></div>
-                <div class="payment-info"><i class="fas fa-info-circle"></i><strong>Important:</strong> You will be redirected to Paystack to complete your ₦3,000 payment before your account is created.</div>
+                <div class="payment-info"><i class="fas fa-info-circle"></i><strong>Testing Mode:</strong> </div>
                 <div class="error-message" id="registerError"></div>
                 <div class="success-message" id="registerSuccess"></div>
                 <form id="registerForm" onsubmit="initiatePayment(event)">
-                    <div class="form-group"><label><i class="fas fa-user"></i> Full Name</label><input type="text" id="regName" required placeholder="Enter your full name"></div>
-                    <div class="form-group"><label><i class="fas fa-envelope"></i> Email Address</label><input type="email" id="regEmail" required placeholder="Enter your email"></div>
-                    <div class="form-group"><label><i class="fas fa-phone"></i> Phone Number</label><input type="tel" id="regPhone" required placeholder="Enter your phone number"></div>
-                    <div class="form-group"><label><i class="fas fa-lock"></i> Create Password</label><input type="password" id="regPassword" required placeholder="Create a password" minlength="6"></div>
+                    <div class="form-group"><label><i class="fas fa-user"></i> Full Name *</label><input type="text" id="regName" required placeholder="Enter your full name"></div>
+                    <div class="form-group"><label><i class="fas fa-user-tag"></i> Username *</label><input type="text" id="regUsername" required placeholder="Choose a unique username"></div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email Address (Optional)</label>
+                        <input type="email" id="regEmail" placeholder="Enter your email for notifications">
+                        <small>Email is optional but recommended for notifications</small>
+                    </div>
+                    <div class="form-group"><label><i class="fas fa-phone"></i> Phone Number *</label><input type="tel" id="regPhone" required placeholder="Enter your phone number"></div>
+                    <div class="form-group"><label><i class="fas fa-lock"></i> Create Password *</label><input type="password" id="regPassword" required placeholder="Create a password" minlength="6"></div>
                     <div class="form-group"><label><i class="fas fa-user-friends"></i> Referrer Code (Optional)</label><input type="text" id="regReferrer" placeholder="Enter referrer code if you have one"></div>
-                    <button type="submit" class="btn btn-payment" id="registerBtn"><i class="fas fa-lock"></i> Pay ₦3,000 & Register<div class="spinner"></div></button>
+                    <button type="submit" class="btn btn-payment" id="registerBtn"><i class="fas fa-user-plus"></i> Register Now <div class="spinner"></div></button>
                 </form>
-                <div class="auth-footer">Already have an account? <a onclick="showSection('login')">Login here</a></div>
+                <div class="auth-footer">Already have an account? <a onclick="navigateTo('login')">Login here</a></div>
             </div>
         </div>
     </section>
 
-    <div class="payment-modal" id="paymentModal"><div class="payment-content"><i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary);"></i><h3>Processing Payment</h3><p>Please complete the payment in the Paystack popup...</p></div></div>
+    <div class="payment-modal" id="paymentModal"><div class="payment-content"><i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary);"></i><h3>Processing Registration</h3><p>Simulating payment for testing...</p></div></div>
+
+    <!-- Withdrawal Modal -->
+    <div class="withdrawal-modal" id="withdrawalModal">
+        <div class="withdrawal-content">
+            <h3><i class="fas fa-money-bill-wave"></i> Withdraw Your Earnings</h3>
+            <div class="withdrawal-amount" id="withdrawalAmount">₦0</div>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">Available for withdrawal from completed stages</p>
+            
+            <form class="bank-form" id="withdrawalForm" onsubmit="processWithdrawal(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-university"></i> Bank Name *</label>
+                    <input type="text" id="bankName" required placeholder="e.g., First Bank, GTBank, etc.">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> Account Number *</label>
+                    <input type="text" id="accountNumber" required placeholder="Enter your 10-digit account number" pattern="[0-9]{10}" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Account Holder Name *</label>
+                    <input type="text" id="accountName" required placeholder="Name as it appears on bank account">
+                </div>
+                <button type="submit" class="btn btn-withdraw" style="width: 100%;" id="withdrawalBtn">
+                    <i class="fas fa-paper-plane"></i> Withdraw to Bank<div class="spinner"></div>
+                </button>
+            </form>
+            <button onclick="closeWithdrawalModal()" style="background: none; border: none; color: #999; margin-top: 15px; cursor: pointer; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem;">Cancel</button>
+        </div>
+    </div>
 
     <section id="dashboard" class="section">
         <div class="dashboard">
             <div class="welcome-banner">
-                <div class="welcome-text"><h2>Hello, <span id="userName">User</span>! 👋</h2><p>Your 2×2 Matrix Dashboard</p></div>
+                <div class="welcome-text"><h2>Hello, <span id="userName">User</span>! 👋</h2><p>Your Dashboard</p></div>
                 <div class="user-badge"><i class="fas fa-crown"></i><span id="currentStage">Starter</span></div>
             </div>
 
+            <!-- Cash Winnings Banner -->
+            <div class="winnings-banner">
+                <div class="winnings-info">
+                    <h3><i class="fas fa-wallet"></i> Your Withdrawable Balance</h3>
+                    <div class="winnings-amount" id="totalWinnings">₦0</div>
+                </div>
+                <div class="winnings-actions">
+                    <div class="withdrawal-status" id="withdrawalStatus">Complete a stage to withdraw</div>
+                    <button class="btn btn-withdraw" id="withdrawBtn" onclick="openWithdrawalModal()" disabled>
+                        <i class="fas fa-money-bill-wave"></i> Withdraw to Bank
+                    </button>
+                </div>
+            </div>
+
             <div class="matrix-explanation">
-                <h4><i class="fas fa-lightbulb"></i> Your 2×2 Matrix Progress</h4>
+                <h4><i class="fas fa-lightbulb"></i> Your Matrix Progress</h4>
                 <ul>
                     <li><i class="fas fa-check-circle"></i> Need 2 direct referrals</li>
-                    <li><i class="fas fa-check-circle"></i> Each needs 2 referrals (4 total)</li>
+                    <li><i class="fas fa-check-circle"></i> Each needs 2 referrals = 4 more</li>
                     <li><i class="fas fa-check-circle"></i> Complete 6 People to Leave Starter!</li>
                 </ul>
             </div>
@@ -428,35 +614,35 @@
                     <div class="tree-connector"></div>
                     <div class="tree-connector"></div>
                 </div>
-                <div class="tree-level" id="Level2Nodes" style="gap: 20px;">
+                <div class="tree-level" id="level2Nodes" style="gap: 20px;">
                     <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
                     <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
                     <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
                     <div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>
                 </div>
                 <p style="text-align: center; margin-top: 20px; color: #666;">
-                    <strong>Progress:</strong> <span id="MatrixProgress">0</span>/6 People to Complete Starter
+                    <strong>Progress:</strong> <span id="matrixProgress">0</span>/6 People to Complete Starter
                 </p>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-friends"></i></div><div class="stat-number" id="statDirect">0</div><div class="stat-label">Direct Referrals (Your 2)</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-number" id="statIndirect">0</div><div class="stat-label">Indirect Referrals (Their 4)</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-friends"></i></div><div class="stat-number" id="statDirect">0</div><div class="stat-label">Direct Referrals</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-number" id="statIndirect">0</div><div class="stat-label">Indirect Referrals</div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-sitemap"></i></div><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total Network Size</div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-number" id="statStage">0</div><div class="stat-label">Current Stage</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-bullseye"></i></div><div class="stat-number" id="statTarget">6</div><div class="stat-label">Next Target (Complete 6)</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-bullseye"></i></div><div class="stat-number" id="statTarget">6</div><div class="stat-label">Next Target</div></div>
             </div>
 
             <div class="progress-section">
-                <div class="progress-header"><h3>Your Stage Progress</h3><p>Fill your 2×2 matrix at each stage to advance!</p></div>
+                <div class="progress-header"><h3>Your Stage Progress</h3><p>Fill your 2×2 matrix at each stage to advance and earn!</p></div>
                 <div class="stages-container">
                     <div class="stages-line"></div><div class="stages-progress" id="progressLine" style="width: 0%"></div>
-                    <div class="stage" id="stageStarter"><div class="stage-circle"><i class="fas fa-play"></i></div><div class="stage-label">Starter</div><div class="stage-requirement">6 People</div></div>
-                    <div class="stage" id="stage1"><div class="stage-circle">1</div><div class="stage-label">Stage 1</div><div class="stage-requirement">36 People</div></div>
-                    <div class="stage" id="Stage2"><div class="stage-circle">2</div><div class="stage-label">Stage 2</div><div class="stage-requirement">216 People</div></div>
-                    <div class="Stage" id="Stage3"><div class="stage-circle">3</div><div class="Stage-label">Stage 3</div><div class="Stage-requirement">1,296 People</div></div>
-                    <div class="Stage" id="Stage4"><div class="Stage-circle">4</div><div class="Stage-label">Stage 4</div><div class="Stage-requirement">7,776 People</div></div>
-                    <div class="Stage" id="Stage5"><div class="Stage-circle">5</div><div class="Stage-label">Stage 5</div><div class="Stage-requirement">46,656 People</div></div>
+                    <div class="stage" id="stageStarter"><div class="stage-circle"><i class="fas fa-play"></i></div><div class="stage-label">Starter</div><div class="stage-reward">₦3,000</div></div>
+                    <div class="stage" id="stage1"><div class="stage-circle">1</div><div class="stage-label">Stage 1</div><div class="stage-reward">₦7,500</div></div>
+                    <div class="stage" id="stage2"><div class="stage-circle">2</div><div class="stage-label">Stage 2</div><div class="stage-reward">₦15,000</div></div>
+                    <div class="stage" id="stage3"><div class="stage-circle">3</div><div class="stage-label">Stage 3</div><div class="stage-reward">₦30,000</div></div>
+                    <div class="stage" id="stage4"><div class="stage-circle">4</div><div class="stage-label">Stage 4</div><div class="stage-reward">₦75,000</div></div>
+                    <div class="stage" id="stage5"><div class="stage-circle">5</div><div class="stage-label">Stage 5</div><div class="stage-reward">₦150,000</div></div>
                 </div>
             </div>
 
@@ -476,515 +662,939 @@
                 <h3><i class="fas fa-list"></i> Your Direct Referrals (<span id="directReferralCount">0</span>/2)</h3>
                 <div id="referralsContainer"><div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Share your link to get your first 2!</p></div></div>
             </div>
+
+            <!-- Withdrawal History -->
+            <div class="withdrawal-history" id="withdrawalHistorySection" style="display: none;">
+                <h3><i class="fas fa-history"></i> Withdrawal History</h3>
+                <div id="withdrawalHistoryList"></div>
+            </div>
         </div>
     </section>
 
     <script>
         // ==================== CONFIGURATION ====================
-        const PAYSTACK_PUBLIC_KEY = 'pk_live_364f4564fcc6efbf39036a9fe8da3cefa545c4d2';
+        const TESTING_MODE = true;
         const REGISTRATION_AMOUNT = 300000; // ₦3,000 in kobo
+        
+        // Stage Rewards Configuration - Updated: Starter is stage 0
+        const stageRewards = [
+            { level: 0, name: 'Starter', required: 6, reward: 3000, withdrawable: 3000 },
+            { level: 1, name: 'Stage 1', required: 36, reward: 25000, withdrawable: 7500 },
+            { level: 2, name: 'Stage 2', required: 216, reward: 50000, withdrawable: 15000 },
+            { level: 3, name: 'Stage 3', required: 1296, reward: 100000, withdrawable: 30000 },
+            { level: 4, name: 'Stage 4', required: 7776, reward: 250000, withdrawable: 75000 },
+            { level: 5, name: 'Stage 5', required: 46656, reward: 500000, withdrawable: 150000 }
+        ];
         // ======================================================
+
+        // Initialize localStorage with empty arrays if not exists
+        if (!localStorage.getItem('henboryx_users')) {
+            localStorage.setItem('henboryx_users', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('henboryx_referrals')) {
+            localStorage.setItem('henboryx_referrals', JSON.stringify({}));
+        }
+        if (!localStorage.getItem('henboryx_withdrawals')) {
+            localStorage.setItem('henboryx_withdrawals', JSON.stringify({}));
+        }
 
         let currentUser = null;
         let users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
         let referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
+        let withdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
         let pendingRegistration = null;
 
-        // 2×2 Matrix Stage System
-        // Stage 0 (Starter): Need 6 people total (2 direct + 4 indirect)
-        // Stage 1: Need 36 people (6 × 6)
-        // Stage 2: Need 216 people (36 × 6)
-        // Stage 3: Need 1,296 people (216 × 6)
-        // Stage 4: Need 7,776 People (1,296 × 6)
-        // Stage 5: Need 46,656 People (7,776 × 6)
-
-        const stages = [
-            { level: 0, name: 'Starter', required: 6 },        // 2 + 4
-            { level: 1, name: 'Stage 1', required: 36 },     // 6²
-            { level: 2, name: 'Stage 2', required: 216 },    // 6³
-            { level: 3, name: 'Stage 3', required: 1296 },   // 6⁴
-            { level: 4, name: 'Stage 4', required: 7776 },    // 6⁵
-            { level: 5, name: 'Stage 5', required: 46656 }   // 6⁶
-        ];
-
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Loaded. Users:', users.length);
             checkLoggedInUser();
+            
+            // Check for referral code in URL
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
             if (refCode) {
                 document.getElementById('regReferrer').value = refCode;
-                showSection('register');
+                navigateTo('register');
             }
         });
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+        // FIXED: Navigation function that prevents default behavior and handles same-page routing
+        function navigateTo(sectionId) {
+            console.log('Navigating to:', sectionId);
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Scroll to top
             window.scrollTo(0, 0);
-            if (sectionId === 'dashboard' && currentUser) updateDashboard();
+            
+            // Update dashboard if needed
+            if (sectionId === 'dashboard' && currentUser) {
+                updateDashboard();
+            }
+            
+            // Clear any error messages
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            return false;
         }
 
-       function checkLoggedInUser() {
-    const savedUser = localStorage.getItem('henboryx_current_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateNavigation();
-        showSection('dashboard');
-    }
-}
-
-function updateNavigation() {
-    if (currentUser) {
-        document.getElementById('loginNav').style.display = 'none';
-        document.getElementById('registerNav').style.display = 'none';
-        document.getElementById('logoutNav').style.display = 'block';
-    } else {
-        document.getElementById('loginNav').style.display = 'block';
-        document.getElementById('registerNav').style.display = 'block';
-        document.getElementById('logoutNav').style.display = 'none';
-    }
-}
-
-function generateReferralCode() { return 'HBX' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
-function generateReference() { return 'HBX_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8).toUpperCase(); }
-
-// Calculate network statistics
-function calculateNetworkStats(userCode) {
-    const directReferrals = referrals[userCode] || [];
-
-    // Count indirect Level 2
-    let indirectCount = 0;
-    for (const ref of directReferrals) {
-        const refUser = users.find(u => u.email === ref.email);
-        if (refUser && referrals[refUser.referralCode]) {
-            indirectCount += referrals[refUser.referralCode].length;
+        function checkLoggedInUser() {
+            const savedUser = localStorage.getItem('henboryx_current_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateNavigation();
+                    navigateTo('dashboard');
+                } catch (e) {
+                    console.error('Error parsing user:', e);
+                    localStorage.removeItem('henboryx_current_user');
+                }
+            }
         }
-    }
 
-    // Calculate total network (all descendants recursively)
-    const totalNetwork = calculateTotalNetwork(userCode);
-
-    return {
-        direct: directReferrals.length,
-        indirect: indirectCount,
-        total: totalNetwork,
-        directReferrals: directReferrals
-    };
-}
-
-// Calculate total network size (all descendants)
-function calculateTotalNetwork(userCode, visited = new Set()) {
-    if (visited.has(userCode)) return 0;
-    visited.add(userCode);
-
-    const directReferrals = referrals[userCode] || [];
-    let total = directReferrals.length;
-
-    for (const ref of directReferrals) {
-        const refUser = users.find(u => u.email === ref.email);
-        if (refUser) {
-            total += calculateTotalNetwork(refUser.referralCode, visited);
+        function updateNavigation() {
+            if (currentUser) {
+                document.getElementById('loginNav').style.display = 'none';
+                document.getElementById('registerNav').style.display = 'none';
+                document.getElementById('logoutNav').style.display = 'block';
+            } else {
+                document.getElementById('loginNav').style.display = 'block';
+                document.getElementById('registerNav').style.display = 'block';
+                document.getElementById('logoutNav').style.display = 'none';
+            }
         }
-    }
 
-    return total;
-}
-
-// Check if user can advance to next stage
-// For 2×2 matrix: Each direct referral must complete their own 2×2 (6 people) before you advance
-function canAdvanceStage(user, targetStage) {
-    const stats = calculateNetworkStats(user.referralCode);
-
-    // Check total network size requirement
-    if (stats.total < stages[targetStage].required) return false;
-
-    // For Starter (stage 0), just need 6 people total
-    if (targetStage === 0) return stats.total >= 6;
-
-    // For higher stages, check if each direct referral has completed their own matrix
-    // Each direct must have: 6, 36, 216, 1296, 7776 (based on their stage)
-    const directReferrals = referrals[user.referralCode] || [];
-    const requiredForEachDirect = stages[targetStage - 1]?.required || 6;
-
-    for (const ref of directReferrals) {
-        const refUser = users.find(u => u.email === ref.email);
-        if (!refUser) continue;
-
-        const refStats = calculateNetworkStats(refUser.referralCode);
-        if (refStats.total < requiredForEachDirect) {
-            return false; // This direct hasn't completed their matrix
+        function generateReferralCode() { 
+            return 'HBX' + Math.random().toString(36).substring(2, 8).toUpperCase(); 
         }
-    }
+        
+        function generateReference() { 
+            return 'HBX_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8).toUpperCase(); 
+        }
 
-    return true;
-}
+        // Calculate network statistics
+        function calculateNetworkStats(userCode) {
+            const directReferrals = referrals[userCode] || [];
+            let indirectCount = 0;
+            
+            for (const ref of directReferrals) {
+                const refUser = users.find(u => u.email === ref.email || u.username === ref.username);
+                if (refUser && referrals[refUser.referralCode]) {
+                    indirectCount += referrals[refUser.referralCode].length;
+                }
+            }
+            
+            const totalNetwork = calculateTotalNetwork(userCode);
+            return { 
+                direct: directReferrals.length, 
+                indirect: indirectCount, 
+                total: totalNetwork, 
+                directReferrals: directReferrals 
+            };
+        }
 
-function initiatePayment(e) {
+        function calculateTotalNetwork(userCode, visited = new Set()) {
+            if (visited.has(userCode)) return 0;
+            visited.add(userCode);
+            
+            const directReferrals = referrals[userCode] || [];
+            let total = directReferrals.length;
+
+            for (const ref of directReferrals) {
+                const refUser = users.find(u => u.email === ref.email || u.username === ref.username);
+                if (refUser) {
+                    total += calculateTotalNetwork(refUser.referralCode, visited);
+                }
+            }
+            return total;
+        }
+
+        function canAdvanceStage(user, targetStage) {
+            const stats = calculateNetworkStats(user.referralCode);
+            if (stats.total < stageRewards[targetStage].required) return false;
+            if (targetStage === 0) return stats.total >= 6;
+
+            const directReferrals = referrals[user.referralCode] || [];
+            const requiredForEachDirect = stageRewards[targetStage - 1]?.required || 6;
+
+            for (const ref of directReferrals) {
+                const refUser = users.find(u => u.email === ref.email || u.username === ref.username);
+                if (!refUser) continue;
+                const refStats = calculateNetworkStats(refUser.referralCode);
+                if (refStats.total < requiredForEachDirect) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Calculate total winnings based on completed stages
+        function calculateWinnings(user) {
+            let totalWinnings = 0;
+            let completedStages = [];
+            
+            for (let i = 0; i < stageRewards.length; i++) {
+                if (canAdvanceStage(user, i) || user.stage >= i) {
+                    totalWinnings += stageRewards[i].reward;
+                    completedStages.push(i);
+                }
+            }
+            return { total: totalWinnings, completedStages: completedStages };
+        }
+
+        // Get available withdrawal amount (stages completed but not yet withdrawn)
+        function getAvailableWithdrawal(user) {
+            const userWithdrawals = withdrawals[user.username] || [];
+            const withdrawnStages = userWithdrawals.map(w => w.stageLevel);
+            const winnings = calculateWinnings(user);
+            let available = 0;
+            let availableStages = [];
+            
+            for (const stageIdx of winnings.completedStages) {
+                if (!withdrawnStages.includes(stageIdx)) {
+                    available += stageRewards[stageIdx].reward;
+                    availableStages.push(stageIdx);
+                }
+            }
+            return { amount: available, stages: availableStages };
+        }
+
+        function initiatePayment(e) {
     e.preventDefault();
     const btn = document.getElementById('registerBtn');
     btn.classList.add('btn-loading');
 
     const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value.toLowerCase();
-    const phone = document.getElementById('regPhone').value;
+    const username = document.getElementById('regUsername').value.toLowerCase().trim();
+    const email = document.getElementById('regEmail').value.toLowerCase().trim();
+    const phone = document.getElementById('regPhone').value.trim();
     const password = document.getElementById('regPassword').value;
-    const referrerCode = document.getElementById('regReferrer').value.toUpperCase();
+    const referrerCode = document.getElementById('regReferrer').value.toUpperCase().trim();
 
-    if (users.find(u => u.email === email)) {
+    // Validation
+    if (!username) {
+        showError('registerError', 'Username is required.');
+        btn.classList.remove('btn-loading');
+        return;
+    }
+    
+    if (users.find(u => u.username === username)) {
+        showError('registerError', 'Username already taken. Please choose another.');
+        btn.classList.remove('btn-loading');
+        return;
+    }
+    
+    if (email && users.find(u => u.email === email)) {
         showError('registerError', 'Email already registered. Please login.');
         btn.classList.remove('btn-loading');
         return;
     }
 
-    pendingRegistration = { name: name, email: email, phone: phone, password: password, referrer: referrerCode };
-    document.getElementById('paymentModal').classList.add('active');
-
-    const paystackInstance = new PaystackPop();
-    paystackInstance.newTransaction({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: email,
-        amount: REGISTRATION_AMOUNT,
-        currency: 'NGN',
-        ref: generateReference(),
-        metadata: {
-            custom_fields: [
-                { display_name: "Full Name", variable_name: "full_name", value: name },
-                { display_name: "Phone Number", variable_name: "phone", value: phone },
-                { display_name: "Platform", variable_name: "platform", value: "HENBORYX Empowerment" }
-            ]
-        },
-        onSuccess: function(transaction) {
-            document.getElementById('paymentModal').classList.remove('active');
-            completeRegistration(transaction.reference);
-        },
-        onCancel: function() {
-            document.getElementById('paymentModal').classList.remove('active');
-            btn.classList.remove('btn-loading');
-            showError('registerError', 'Payment was cancelled. Please try again.');
-        },
-        onError: function(error) {
-            document.getElementById('paymentModal').classList.remove('active');
-            btn.classList.remove('btn-loading');
-            showError('registerError', 'Payment failed: ' + error.message);
-        }
-    });
-}
-
-function completeRegistration(paymentReference) {
-    if (!pendingRegistration) return;
-    const btn = document.getElementById('registerBtn');
-
-    const newUser = {
+    // Create user data object
+    const userData = {
         id: Date.now(),
-        name: pendingRegistration.name,
-        email: pendingRegistration.email,
-        phone: pendingRegistration.phone,
-        password: pendingRegistration.password,
+        name: name,
+        username: username,
+        email: email || null,
+        phone: phone,
+        password: password,
         referralCode: generateReferralCode(),
-        referrer: pendingRegistration.referrer || null,
+        referrer: referrerCode || null,
+        stage: 0,
         joinedDate: new Date().toISOString(),
-        stage: -1, // Not yet qualified as Starter
-        paymentStatus: 'paid',
-        paymentReference: paymentReference,
-        paymentAmount: 3000,
-        paymentDate: new Date().toISOString()
+        paymentStatus: 'pending',
+        paymentReference: null,
+        paymentAmount: 0,
+        paymentDate: null,
+        bankDetails: null,
+        withdrawnAmount: 0,
+        totalEarned: 0
     };
 
-    users.push(newUser);
-    localStorage.setItem('henboryx_users', JSON.stringify(users));
-
-    referrals[newUser.referralCode] = [];
-    localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
-
-    if (pendingRegistration.referrer) {
-        const referrer = users.find(u => u.referralCode === pendingRegistration.referrer);
-        if (referrer) {
-            if (!referrals[pendingRegistration.referrer]) referrals[pendingRegistration.referrer] = [];
-            referrals[pendingRegistration.referrer].push({
-                name: pendingRegistration.name,
-                email: pendingRegistration.email,
-                date: new Date().toISOString(),
-                paymentStatus: 'paid'
-            });
-            localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
-        }
-    }
-
-    pendingRegistration = null;
-    document.getElementById('registerSuccess').style.display = 'block';
-    document.getElementById('registerSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Registration successful! Payment verified (Ref: ' + paymentReference + '). Redirecting to login...';
-    btn.classList.remove('btn-loading');
-
-    setTimeout(() => {
-        showSection('login');
-        document.getElementById('loginEmail').value = newUser.email;
-    }, 2000);
-}
-
-function handleLogin(e) {
-    e.preventDefault();
-    const btn = document.getElementById('loginBtn');
-    btn.classList.add('btn-loading');
-    setTimeout(() => {
-        const email = document.getElementById('loginEmail').value.toLowerCase();
-        const password = document.getElementById('loginPassword').value;
-        const user = users.find(u => u.email === email && u.password === password);
-        if (user) {
-            currentUser = user;
-            localStorage.setItem('henboryx_current_user', JSON.stringify(user));
-            updateNavigation();
-            btn.classList.remove('btn-loading');
-            showSection('dashboard');
-            createConfetti();
-        } else {
-            showError('loginError', 'Invalid email or password.');
-            btn.classList.remove('btn-loading');
-        }
-    }, 800);
-}
-
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('henboryx_current_user');
-    updateNavigation();
-    showSection('home');
-}
-
-function updateDashboard() {
-    if (!currentUser) return;
-    document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
-
-    const stats = calculateNetworkStats(currentUser.referralCode);
-    const directReferrals = referrals[currentUser.referralCode] || [];
-
-    // Determine current stage
-    let currentStage = -1;
-    for (let i = stages.length - 1; i >= 0; i--) {
-        if (canAdvanceStage(currentUser, i)) {
-            currentStage = i;
-            break;
-        }
-    }
-
-    currentUser.stage = currentStage;
-    localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
-
-    // Update matrix visual
-    updateMatrixVisual(stats.directReferrals);
-    document.getElementById('matrixProgress').textContent = stats.total;
-
-    // Update stats
-    document.getElementById('statDirect').textContent = stats.direct;
-    document.getElementById('statIndirect').textContent = stats.indirect;
-    document.getElementById('statTotal').textContent = stats.total.toLocaleString();
-    document.getElementById('statStage').textContent = currentStage >= 0 ? currentStage : '-';
-
-    const stageDisplay = currentStage === -1 ? 'New Member' : 
-                        currentStage === 0 ? 'Starter' : 'Stage ' + currentStage;
-    document.getElementById('currentStage').textContent = stageDisplay;
-
-    // Next target
-    let nextTarget, progressPercent;
-    if (currentStage < 5) {
-        const nextStageIdx = currentStage + 1;
-        nextTarget = stages[nextStageIdx].required.toLocaleString();
-        const prevRequired = currentStage >= 0 ? stages[currentStage].required : 0;
-        const range = nextTarget - prevRequired;
-        const progress = stats.total - prevRequired;
-        progressPercent = Math.max(0, Math.min(100, Math.round((progress / range) * 100)));
-    } else {
-        nextTarget = 'Max';
-        progressPercent = 100;
-    }
-
-    document.getElementById('statTarget').textContent = nextTarget;
-
-    updateStagesVisual(currentStage, stats.total);
-
-    const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
-    document.getElementById('referralLink').textContent = refLink;
-
-    document.getElementById('directReferralCount').textContent = stats.direct;
-    updateReferralsList(stats.directReferrals);
-}
-
-function updateMatrixVisual(directReferrals) {
-    // Update level 1 (direct referrals)
-    const slot1 = document.getElementById('slot1');
-    const slot2 = document.getElementById('slot2');
-
-    if (directReferrals[0]) {
-        const initials1 = directReferrals[0].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        slot1.textContent = initials1;
-        slot1.classList.remove('empty');
-    } else {
-        slot1.textContent = 'Empty';
-        slot1.classList.add('empty');
-    }
-
-    if (directReferrals[1]) {
-        const initials2 = directReferrals[1].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        slot2.textContent = initials2;
-        slot2.classList.remove('empty');
-    } else {
-        slot2.textContent = 'Empty';
-        slot2.classList.add('empty');
-    }
-
-    // Update level 2 (indirect referrals)
-    const level2Container = document.getElementById('level2Nodes');
-    let level2HTML = '';
-    let level2Count = 0;
-
-    for (let i = 0; i < 2; i++) {
-        if (directReferrals[i]) {
-            const refUser = users.find(u => u.email === directReferrals[i].email);
-            if (refUser && referrals[refUser.referralCode]) {
-                const indirects = referrals[refUser.referralCode];
-                for (let j = 0; j < 2; j++) {
-                    if (indirects[j]) {
-                        const initials = indirects[j].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                        level2HTML += '<div class="tree-node">' + initials + '</div>';
-                        level2Count++;
-                    } else {
-                        level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
-                    }
+    // Initialize Paystack payment
+    payWithPaystack(userData, function(transaction) {
+        // This runs AFTER successful Paystack payment
+        
+        // Save user to localStorage
+        users.push(userData);
+        localStorage.setItem('henboryx_users', JSON.stringify(users));
+        
+        // Initialize referrals
+        referrals[userData.referralCode] = [];
+        localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+        
+        // Handle referrer
+        if (userData.referrer) {
+            const referrer = users.find(u => u.referralCode === userData.referrer);
+            if (referrer) {
+                if (!referrals[userData.referrer]) {
+                    referrals[userData.referrer] = [];
                 }
-            } else {
-                level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
+                referrals[userData.referrer].push({
+                    name: userData.name,
+                    username: userData.username,
+                    email: userData.email,
+                    date: new Date().toISOString(),
+                    paymentStatus: 'paid'
+                });
+                localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+                notifyReferrer(referrer, userData);
             }
-        } else {
-            level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
         }
-    }
-
-    level2Container.innerHTML = level2HTML;
-}
-
-function updateStagesVisual(currentStage, totalNetwork) {
-    // Starter stage
-    const starterEl = document.getElementById('stageStarter');
-    if (currentStage >= 0) {
-        starterEl.classList.add('completed');
-        starterEl.classList.remove('current');
-    } else {
-        starterEl.classList.add('current');
-        starterEl.classList.remove('completed');
-    }
-
-    // Other stages
-    for (let i = 1; i <= 5; i++) {
-        const stageEl = document.getElementById('stage' + i);
-        if (currentStage >= i) {
-            stageEl.classList.add('completed');
-            stageEl.classList.remove('current');
-        } else if (currentStage === i - 1) {
-            stageEl.classList.add('current');
-            stageEl.classList.remove('completed');
-        } else {
-            stageEl.classList.remove('completed', 'current');
-        }
-    }
-
-    // Progress line
-    let progressWidth = 0;
-    if (currentStage >= 5) {
-        progressWidth = 100;
-    } else if (currentStage === -1) {
-        progressWidth = Math.min(100, (totalNetwork / 6) * (100/6));
-    } else {
-        const segmentWidth = 100 / 6;
-        progressWidth = (currentStage + 1) * segmentWidth;
-        const nextReq = stages[currentStage + 1]?.required || stages[5].required;
-        const currReq = stages[currentStage].required;
-        const range = nextReq - currReq;
-        const progress = totalNetwork - currReq;
-        const partial = (progress / range) * segmentWidth;
-        progressWidth += Math.max(0, partial);
-    }
-    document.getElementById('progressLine').style.width = Math.min(100, progressWidth) + '%';
-}
-
-function updateReferralsList(directReferrals) {
-    const container = document.getElementById('referralsContainer');
-    if (directReferrals.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Share your link to get your first 2!</p></div>';
-        return;
-    }
-    let html = '';
-    directReferrals.forEach((ref, index) => {
-        const date = new Date(ref.date).toLocaleDateString();
-        const initials = ref.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        const refUser = users.find(u => u.email === ref.email);
-        const refStats = refUser ? calculateNetworkStats(refUser.referralCode) : { total: 0 };
-        const refStage = refUser ? (refUser.stage >= 0 ? 'Stage ' + refUser.stage : 'New') : 'New';
-        const matrixStatus = refStats.total >= 6 ? '✓ Matrix Complete' : refStats.total + '/6';
-
-        html += '<div class="referral-item"><div class="referral-info"><div class="referral-avatar">' + initials + '</div><div class="referral-details"><h4>' + ref.name + '</h4><p>' + ref.email + ' • ' + matrixStatus + '</p></div></div><span class="referral-status status-active">' + refStage + '</span></div>';
-    });
-    container.innerHTML = html;
-}
-
-function copyReferralLink() {
-    const link = document.getElementById('referralLink').textContent;
-    navigator.clipboard.writeText(link).then(() => {
-        const btn = document.getElementById('copyBtn');
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        btn.classList.add('copied');
+        
+        // Notify new user
+        notifyNewUser(userData);
+        
+        // Show success
+        btn.classList.remove('btn-loading');
+        document.getElementById('registerSuccess').style.display = 'block';
+        document.getElementById('registerSuccess').innerHTML = 
+            '<i class="fas fa-check-circle"></i> Payment successful! Ref: ' + transaction.reference + 
+            '. Redirecting to login...';
+        
+        // Redirect to login after 2 seconds
         setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
-            btn.classList.remove('copied');
+            navigateTo('login');
+            document.getElementById('loginUsername').value = userData.username;
         }, 2000);
     });
+    
+    btn.classList.remove('btn-loading');
 }
+        function completeRegistration(paymentReference) {
+            if (!pendingRegistration) return;
+            const btn = document.getElementById('registerBtn');
 
-function shareWhatsApp() {
-    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-    const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix - bring 2 who bring 2. Register with ₦3,000. Use my link: ');
-    window.open('https://wa.me/?text=' + text + link, '_blank');
-}
+            const newUser = {
+                id: Date.now(),
+                name: pendingRegistration.name,
+                username: pendingRegistration.username,
+                email: pendingRegistration.email || null,
+                phone: pendingRegistration.phone,
+                password: pendingRegistration.password,
+                referralCode: generateReferralCode(),
+                referrer: pendingRegistration.referrer || null,
+                joinedDate: new Date().toISOString(),
+                stage: 0, // FIXED: Start at stage 0 (Starter) immediately after registration
+                paymentStatus: 'paid',
+                paymentReference: paymentReference,
+                paymentAmount: 3000,
+                paymentDate: new Date().toISOString(),
+                bankDetails: null,
+                withdrawnAmount: 0,
+                totalEarned: 0
+            };
 
-function shareFacebook() {
-    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-    window.open('https://www.facebook.com/sharer/sharer.php?u=' + link, '_blank');
-}
+            users.push(newUser);
+            localStorage.setItem('henboryx_users', JSON.stringify(users));
 
-function shareTwitter() {
-    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-    const text = encodeURIComponent('Join HENBORYX Empowerment! 2×2 matrix system - You bring 2, they bring 2. Register with ₦3,000. My link:');
-    window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + link, '_blank');
-}
+            referrals[newUser.referralCode] = [];
+            localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
 
-function shareTelegram() {
-    const link = encodeURIComponent(document.getElementById('referralLink').textContent);
-    const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix system');
-    window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
-}
+            // Handle referrer
+            if (pendingRegistration.referrer) {
+                const referrer = users.find(u => u.referralCode === pendingRegistration.referrer);
+                if (referrer) {
+                    if (!referrals[pendingRegistration.referrer]) {
+                        referrals[pendingRegistration.referrer] = [];
+                    }
+                    referrals[pendingRegistration.referrer].push({
+                        name: pendingRegistration.name,
+                        username: pendingRegistration.username,
+                        email: pendingRegistration.email,
+                        date: new Date().toISOString(),
+                        paymentStatus: 'paid'
+                    });
+                    localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+                    
+                    // Notify referrer
+                    notifyReferrer(referrer, newUser);
+                }
+            }
 
-function showError(elementId, message) {
-    const el = document.getElementById(elementId);
-    el.textContent = message;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 5000);
-}
+            // Notify new user
+            notifyNewUser(newUser);
 
-function createConfetti() {
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.backgroundColor = ['#f4a261', '#e76f51', '#2a9d8f', '#e9c46a'][Math.floor(Math.random() * 4)];
-        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 4000);
+            pendingRegistration = null;
+            document.getElementById('registerSuccess').style.display = 'block';
+            document.getElementById('registerSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Registration successful! (Test Mode - Ref: ' + paymentReference + '). Redirecting to login...';
+            btn.classList.remove('btn-loading');
+
+            setTimeout(() => {
+                navigateTo('login');
+                document.getElementById('loginUsername').value = newUser.username;
+            }, 2000);
+        }
+
+        // Notification System - FIXED: Better error handling for email
+        function notifyNewUser(user) {
+            // Always show in-app notification
+            showNotification('Welcome!', 'Registration complete! You are now in the Starter stage. Share your link to start earning.', 'success');
+            
+            // Try to send email if email is provided
+            if (user.email && typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.send("service_4k2g19d", "template_leggxxp", {
+                        to_email: user.email,
+                        to_name: user.name,
+                        username: user.username,
+                        referral_code: user.referralCode
+                    }).then(function(response) {
+                        console.log("Welcome email sent!", response);
+                    }).catch(function(error) {
+                        console.log("Email failed:", error);
+                    });
+                } catch (e) {
+                    console.log("EmailJS not available:", e);
+                }
+            }
+        }
+
+        function notifyReferrer(referrer, newReferral) {
+            // In-app notification if referrer is logged in
+            if (currentUser && currentUser.username === referrer.username) {
+                showNotification('New Referral!', newReferral.name + ' just joined using your link!', 'success');
+            }
+            
+            // Try to send email if email is provided
+            if (referrer.email && typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.send("service_4k2g19d", "template_1gscqjp", {
+                        to_email: referrer.email,
+                        referrer_name: referrer.name,
+                        new_member_name: newReferral.name,
+                        new_member_username: newReferral.username
+                    }).then(function(response) {
+                        console.log("Referral email sent!", response);
+                    }).catch(function(error) {
+                        console.log("Referral email failed:", error);
+                    });
+                } catch (e) {
+                    console.log("EmailJS not available:", e);
+                }
+            }
+        }
+
+        function showNotification(title, message, type) {
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + type;
+            notification.innerHTML = 
+                '<button class="notification-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>' +
+                '<h4><i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + title + '</h4>' +
+                '<p>' + message + '</p>';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('btn-loading');
+            
+            setTimeout(() => {
+                const usernameOrEmail = document.getElementById('loginUsername').value.toLowerCase().trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                console.log('Login attempt:', usernameOrEmail);
+                console.log('Total users:', users.length);
+                
+                const user = users.find(u => 
+                    (u.username === usernameOrEmail || u.email === usernameOrEmail) && 
+                    u.password === password
+                );
+                
+                if (user) {
+                    console.log('Login successful:', user.username);
+                    currentUser = user;
+                    localStorage.setItem('henboryx_current_user', JSON.stringify(user));
+                    updateNavigation();
+                    btn.classList.remove('btn-loading');
+                    navigateTo('dashboard');
+                    createConfetti();
+                } else {
+                    console.log('Login failed: Invalid credentials');
+                    showError('loginError', 'Invalid username/email or password.');
+                    btn.classList.remove('btn-loading');
+                }
+            }, 800);
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('henboryx_current_user');
+            updateNavigation();
+            navigateTo('home');
+        }
+
+        function updateDashboard() {
+            if (!currentUser) {
+                console.log('No current user, redirecting to login');
+                navigateTo('login');
+                return;
+            }
+
+            document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+
+            const stats = calculateNetworkStats(currentUser.referralCode);
+            const directReferrals = referrals[currentUser.referralCode] || [];
+
+            // Determine how many stages are COMPLETED based on network size
+            // Starter complete = 6 people, Stage 1 complete = 36 people, etc.
+            let completedStages = 0;
+            for (let i = 0; i < stageRewards.length; i++) {
+                if (stats.total >= stageRewards[i].required) {
+                    completedStages = i + 1; // +1 because stage 0 completion = 1 stage done
+                }
+            }
+
+            // Current stage = number of completed stages (0 to 5)
+            // If 0 stages completed = Starter, 1 = Stage 1, etc.
+            let newStage = completedStages;
+            if (newStage > 5) newStage = 5;
+
+            // If stage changed (new stages completed), notify user
+            if (newStage > currentUser.stage) {
+                const oldStage = currentUser.stage;
+                currentUser.stage = newStage;
+
+                showNotification('Stage Upgraded!', 
+                    'Congratulations! You have progressed from ' + 
+                    (oldStage === 0 ? 'Starter' : 'Stage ' + oldStage) + 
+                    ' to ' + (newStage === 0 ? 'Starter' : 'Stage ' + newStage) + '!', 
+                    'success');
+                createConfetti();
+            } else {
+                currentUser.stage = newStage;
+            }
+
+            localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
+
+            // Update user in users array
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                localStorage.setItem('henboryx_users', JSON.stringify(users));
+            }
+
+            // Calculate withdrawable amount based on COMPLETED stages
+            // Only stages that are fully completed can be withdrawn
+            let availableAmount = 0;
+            let availableStages = [];
+
+            for (let i = 0; i < completedStages; i++) {
+                availableAmount += stageRewards[i].withdrawable;
+                availableStages.push(i);
+            }
+
+            // Subtract already withdrawn amount
+            const alreadyWithdrawn = currentUser.withdrawnAmount || 0;
+            availableAmount = Math.max(0, availableAmount - alreadyWithdrawn);
+
+            // Update winnings display
+            document.getElementById('totalWinnings').textContent = '₦' + availableAmount.toLocaleString();
+
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            const withdrawalStatus = document.getElementById('withdrawalStatus');
+
+            if (availableAmount > 0) {
+                withdrawBtn.disabled = false;
+                withdrawBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Withdraw ₦' + availableAmount.toLocaleString();
+                withdrawalStatus.innerHTML = '<i class="fas fa-check-circle"></i> ₦' + availableAmount.toLocaleString() + ' available for withdrawal';
+                withdrawalStatus.style.background = 'rgba(255,255,255,0.3)';
+            } else {
+                withdrawBtn.disabled = true;
+                withdrawBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Withdraw to Bank';
+
+                // Show what's needed to unlock next stage
+                if (completedStages < stageRewards.length) {
+                    const nextReq = stageRewards[completedStages].required;
+                    const remaining = nextReq - stats.total;
+                    withdrawalStatus.textContent = 'Need ' + remaining + ' more people to complete ' + 
+                        (completedStages === 0 ? 'Starter' : 'Stage ' + completedStages);
+                } else {
+                    withdrawalStatus.textContent = 'All stages completed!';
+                }
+            }
+
+            // Update matrix visual
+            updateMatrixVisual(stats.directReferrals);
+            document.getElementById('matrixProgress').textContent = stats.total;
+
+            // Update stats
+            document.getElementById('statDirect').textContent = stats.direct;
+            document.getElementById('statIndirect').textContent = stats.indirect;
+            document.getElementById('statTotal').textContent = stats.total.toLocaleString();
+            document.getElementById('statStage').textContent = newStage;
+
+            const stageDisplay = newStage === 0 ? 'Starter' : 'Stage ' + newStage;
+            document.getElementById('currentStage').textContent = stageDisplay;
+
+            // Next target
+            let nextTarget;
+            if (newStage < 5) {
+                nextTarget = stageRewards[newStage].required.toLocaleString();
+            } else {
+                nextTarget = 'Max';
+            }
+            document.getElementById('statTarget').textContent = nextTarget;
+
+            updateStagesVisual(newStage, stats.total);
+
+            const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
+            document.getElementById('referralLink').textContent = refLink;
+
+            document.getElementById('directReferralCount').textContent = stats.direct;
+            updateReferralsList(stats.directReferrals);
+            updateWithdrawalHistory();
+        }
+
+        function updateMatrixVisual(directReferrals) {
+            const slot1 = document.getElementById('slot1');
+            const slot2 = document.getElementById('slot2');
+
+            if (directReferrals[0]) {
+                const initials1 = directReferrals[0].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                slot1.textContent = initials1;
+                slot1.classList.remove('empty');
+            } else {
+                slot1.textContent = 'Empty';
+                slot1.classList.add('empty');
+            }
+
+            if (directReferrals[1]) {
+                const initials2 = directReferrals[1].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                slot2.textContent = initials2;
+                slot2.classList.remove('empty');
+            } else {
+                slot2.textContent = 'Empty';
+                slot2.classList.add('empty');
+            }
+
+            const level2Container = document.getElementById('level2Nodes');
+            let level2HTML = '';
+
+            for (let i = 0; i < 2; i++) {
+                if (directReferrals[i]) {
+                    const refUser = users.find(u => u.username === directReferrals[i].username || u.email === directReferrals[i].email);
+                    if (refUser && referrals[refUser.referralCode]) {
+                        const indirects = referrals[refUser.referralCode];
+                        for (let j = 0; j < 2; j++) {
+                            if (indirects[j]) {
+                                const initials = indirects[j].name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                                level2HTML += '<div class="tree-node">' + initials + '</div>';
+                            } else {
+                                level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
+                            }
+                        }
+                    } else {
+                        level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
+                    }
+                } else {
+                    level2HTML += '<div class="tree-node empty" style="opacity: 0.5;">Waiting...</div><div class="tree-node empty" style="opacity: 0.5;">Waiting...</div>';
+                }
+            }
+            level2Container.innerHTML = level2HTML;
+        }
+
+        function updateStagesVisual(currentStage, totalNetwork) {
+            const starterEl = document.getElementById('stageStarter');
+            if (currentStage >= 0) {
+                starterEl.classList.add('current');
+                starterEl.classList.remove('completed');
+            }
+            
+            if (currentStage > 0) {
+                starterEl.classList.add('completed');
+                starterEl.classList.remove('current');
+            }
+
+            for (let i = 1; i <= 5; i++) {
+                const stageEl = document.getElementById('stage' + i);
+                if (currentStage >= i) {
+                    stageEl.classList.add('completed');
+                    stageEl.classList.remove('current');
+                } else if (currentStage === i - 1) {
+                    stageEl.classList.add('current');
+                    stageEl.classList.remove('completed');
+                } else {
+                    stageEl.classList.remove('completed', 'current');
+                }
+            }
+
+            let progressWidth = 0;
+            if (currentStage >= 5) {
+                progressWidth = 100;
+            } else if (currentStage === 0) {
+                progressWidth = Math.min(100, (totalNetwork / 6) * (100/6));
+            } else {
+                const segmentWidth = 100 / 6;
+                progressWidth = (currentStage + 1) * segmentWidth;
+                const nextReq = stageRewards[currentStage + 1]?.required || stageRewards[5].required;
+                const currReq = stageRewards[currentStage].required;
+                const range = nextReq - currReq;
+                const progress = totalNetwork - currReq;
+                const partial = (progress / range) * segmentWidth;
+                progressWidth += Math.max(0, partial);
+            }
+            document.getElementById('progressLine').style.width = Math.min(100, progressWidth) + '%';
+        }
+
+        function updateReferralsList(directReferrals) {
+            const container = document.getElementById('referralsContainer');
+            if (directReferrals.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i><p>No referrals yet. Share your link to get your first 2!</p></div>';
+                return;
+            }
+            let html = '';
+            directReferrals.forEach((ref, index) => {
+                const date = new Date(ref.date).toLocaleDateString();
+                const initials = ref.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                const refStats = refUser ? calculateNetworkStats(refUser.referralCode) : { total: 0 };
+                const refStage = refUser ? (refUser.stage >= 0 ? 'Stage ' + refUser.stage : 'Starter') : 'Starter';
+                const matrixStatus = refStats.total >= 6 ? '✓ Matrix Complete' : refStats.total + '/6';
+
+                html += '<div class="referral-item"><div class="referral-info"><div class="referral-avatar">' + initials + '</div><div class="referral-details"><h4>' + ref.name + '</h4><p>' + (ref.email || ref.username) + ' • ' + matrixStatus + '</p></div></div><span class="referral-status status-active">' + refStage + '</span></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        // Withdrawal Functions
+      function openWithdrawalModal() {
+    // Calculate completed stages based on network size
+    const stats = calculateNetworkStats(currentUser.referralCode);
+    let completedStages = 0;
+    for (let i = 0; i < stageRewards.length; i++) {
+        if (stats.total >= stageRewards[i].required) {
+            completedStages = i + 1;
+        }
     }
+    
+    // Calculate available amount from completed stages only
+    let availableAmount = 0;
+    for (let i = 0; i < completedStages; i++) {
+        availableAmount += stageRewards[i].withdrawable;
+    }
+    
+    // Subtract already withdrawn amount
+    const alreadyWithdrawn = currentUser.withdrawnAmount || 0;
+    availableAmount = Math.max(0, availableAmount - alreadyWithdrawn);
+    
+    if (availableAmount === 0) {
+        showNotification('No Funds', 'You have no available funds to withdraw.', 'error');
+        return;
+    }
+    
+    document.getElementById('withdrawalAmount').textContent = '₦' + availableAmount.toLocaleString();
+    
+    // Pre-fill bank details if available
+    if (currentUser.bankDetails) {
+        document.getElementById('bankName').value = currentUser.bankDetails.bankName || '';
+        document.getElementById('accountNumber').value = currentUser.bankDetails.accountNumber || '';
+        document.getElementById('accountName').value = currentUser.bankDetails.accountName || '';
+    }
+    
+    document.getElementById('withdrawalModal').classList.add('active');
 }
 
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.error-message')) {
-        document.querySelectorAll('.error-message').forEach(el => { el.style.display = 'none'; });
+        function closeWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.remove('active');
+            document.getElementById('withdrawalForm').reset();
+        }
+
+        function processWithdrawal(e) {
+    e.preventDefault();
+    const btn = document.getElementById('withdrawalBtn');
+    btn.classList.add('btn-loading');
+
+    const bankName = document.getElementById('bankName').value.trim();
+    const accountNumber = document.getElementById('accountNumber').value.trim();
+    const accountName = document.getElementById('accountName').value.trim();
+
+    if (!/^\d{10}$/.test(accountNumber)) {
+        alert('Please enter a valid 10-digit account number');
+        btn.classList.remove('btn-loading');
+        return;
     }
-});
+
+    // Calculate completed stages
+    const stats = calculateNetworkStats(currentUser.referralCode);
+    let completedStages = 0;
+    for (let i = 0; i < stageRewards.length; i++) {
+        if (stats.total >= stageRewards[i].required) {
+            completedStages = i + 1;
+        }
+    }
+    
+    // Calculate available amount
+    let availableAmount = 0;
+    let availableStages = [];
+    for (let i = 0; i < completedStages; i++) {
+        availableAmount += stageRewards[i].withdrawable;
+        availableStages.push(i);
+    }
+    
+    const alreadyWithdrawn = currentUser.withdrawnAmount || 0;
+    availableAmount = Math.max(0, availableAmount - alreadyWithdrawn);
+    
+    if (availableAmount <= 0) {
+        alert('No funds available for withdrawal');
+        btn.classList.remove('btn-loading');
+        return;
+    }
+    
+    currentUser.bankDetails = {
+        bankName: bankName,
+        accountNumber: accountNumber,
+        accountName: accountName
+    };
+    
+    if (!withdrawals[currentUser.username]) {
+        withdrawals[currentUser.username] = [];
+    }
+    
+    const withdrawalRecord = {
+        id: Date.now(),
+        amount: availableAmount,
+        stages: availableStages,
+        bankName: bankName,
+        accountNumber: accountNumber,
+        accountName: accountName,
+        date: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    withdrawals[currentUser.username].push(withdrawalRecord);
+    
+    if (!currentUser.pendingWithdrawal) {
+        currentUser.pendingWithdrawal = 0;
+    }
+    currentUser.pendingWithdrawal += availableAmount;
+    
+    localStorage.setItem('henboryx_withdrawals', JSON.stringify(withdrawals));
+    localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
+    
+    const userIndex = users.findIndex(u => u.username === currentUser.username);
+    if (userIndex !== -1) {
+        users[userIndex] = currentUser;
+        localStorage.setItem('henboryx_users', JSON.stringify(users));
+    }
+
+    setTimeout(() => {
+        btn.classList.remove('btn-loading');
+        closeWithdrawalModal();
+        showNotification('Withdrawal Requested!', '₦' + availableAmount.toLocaleString() + ' will be sent to your bank account within 24 hours.', 'success');
+        updateDashboard();
+    }, 1500);
+}
+
+        function updateWithdrawalHistory() {
+            const userWithdrawals = withdrawals[currentUser.username] || [];
+            const historySection = document.getElementById('withdrawalHistorySection');
+            const historyList = document.getElementById('withdrawalHistoryList');
+            
+            if (userWithdrawals.length === 0) {
+                historySection.style.display = 'none';
+                return;
+            }
+            
+            historySection.style.display = 'block';
+            let html = '';
+            
+            userWithdrawals.slice().reverse().forEach(w => {
+                const date = new Date(w.date).toLocaleDateString();
+                const stagesText = w.stages.map(s => stageRewards[s].name).join(', ');
+                
+                html += 
+                    '<div class="withdrawal-item">' +
+                        '<div class="withdrawal-details">' +
+                            '<h4>₦' + w.amount.toLocaleString() + '</h4>' +
+                            '<p>' + w.bankName + ' • ' + w.accountNumber + ' • ' + date + '</p>' +
+                            '<p style="font-size: 0.8rem; color: #aaa;">Stages: ' + stagesText + '</p>' +
+                        '</div>' +
+                        '<span class="' + (w.status === 'completed' ? 'status-completed' : 'status-pending') + '">' + 
+                            (w.status === 'completed' ? 'Completed' : 'Pending') + 
+                        '</span>' +
+                    '</div>';
+            });
+            
+            historyList.innerHTML = html;
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> Copy Link';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function shareWhatsApp() {
+            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+            const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix - bring 2 who bring 2. Register with ₦3,000. Use my link: ');
+            window.open('https://wa.me/?text=' + text + link, '_blank');
+        }
+
+        function shareFacebook() {
+            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + link, '_blank');
+        }
+
+        function shareTwitter() {
+            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+            const text = encodeURIComponent('Join HENBORYX Empowerment! 2×2 matrix system - You bring 2, they bring 2. Register with ₦3,000. My link:');
+            window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + link, '_blank');
+        }
+
+        function shareTelegram() {
+            const link = encodeURIComponent(document.getElementById('referralLink').textContent);
+            const text = encodeURIComponent('Join me on HENBORYX Empowerment! 2×2 matrix system');
+            window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
+        }
+
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = ['#f4a261', '#e76f51', '#2a9d8f', '#e9c46a'][Math.floor(Math.random() * 4)];
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('withdrawal-modal')) {
+                closeWithdrawalModal();
+            }
+            if (e.target.classList.contains('payment-modal')) {
+                document.getElementById('paymentModal').classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
