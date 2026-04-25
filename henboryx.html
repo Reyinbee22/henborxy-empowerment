@@ -425,6 +425,7 @@
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <nav id="navbar">
@@ -507,9 +508,18 @@
                         <label><i class="fas fa-user"></i> Username or Email</label>
                         <input type="text" id="loginUsername" required placeholder="Enter username or email">
                     </div>
-                    <div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="loginPassword" required placeholder="Enter your password"></div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="loginPassword" required placeholder="Enter your password" style="padding-right: 45px;">
+                            <i class="fas fa-eye" id="toggleLoginPassword" onclick="togglePassword('loginPassword', 'toggleLoginPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 1rem;"></i>
+                        </div>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;" id="loginBtn">Login<div class="spinner"></div></button>
                 </form>
+                <div style="text-align: right; margin-top: -15px; margin-bottom: 20px;">
+                    <a onclick="openForgotPasswordModal()" style="color: var(--primary); cursor: pointer; font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
+                </div>
                 <div class="auth-footer">Don't have an account? <a onclick="navigateTo('register')">Register here</a></div>
             </div>
         </div>
@@ -521,7 +531,7 @@
                 <h2><i class="fas fa-user-plus"></i> Join HENBORYX</h2>
                 <p class="subtitle">Start your 2×2 matrix journey today</p>
                 <div class="price-tag"><i class="fas fa-credit-card"></i>Registration Fee: ₦3,000 only<div class="secure-badge"><i class="fas fa-lock"></i><span>Secure Payment by Paystack</span></div></div>
-                <div class="payment-info"><i class="fas fa-info-circle"></i><strong>Testing Mode:</strong> </div>
+                
                 <div class="error-message" id="registerError"></div>
                 <div class="success-message" id="registerSuccess"></div>
                 <form id="registerForm" onsubmit="initiatePayment(event)">
@@ -533,7 +543,20 @@
                         <small>Email is optional but recommended for notifications</small>
                     </div>
                     <div class="form-group"><label><i class="fas fa-phone"></i> Phone Number *</label><input type="tel" id="regPhone" required placeholder="Enter your phone number"></div>
-                    <div class="form-group"><label><i class="fas fa-lock"></i> Create Password *</label><input type="password" id="regPassword" required placeholder="Create a password" minlength="6"></div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Create Password *</label>
+                        <div style="position: relative;">
+                            <input type="password" id="regPassword" required placeholder="Create a password" minlength="6" style="padding-right: 45px;">
+                            <i class="fas fa-eye" id="toggleRegPassword" onclick="togglePassword('regPassword', 'toggleRegPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 1rem;"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Confirm Password *</label>
+                        <div style="position: relative;">
+                            <input type="password" id="regConfirmPassword" required placeholder="Confirm your password" minlength="6" style="padding-right: 45px;">
+                            <i class="fas fa-eye" id="toggleRegConfirmPassword" onclick="togglePassword('regConfirmPassword', 'toggleRegConfirmPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 1rem;"></i>
+                        </div>
+                    </div>
                     <div class="form-group"><label><i class="fas fa-user-friends"></i> Referrer Code (Optional)</label><input type="text" id="regReferrer" placeholder="Enter referrer code if you have one"></div>
                     <button type="submit" class="btn btn-payment" id="registerBtn"><i class="fas fa-user-plus"></i> Register Now <div class="spinner"></div></button>
                 </form>
@@ -898,6 +921,14 @@
     
     if (email && users.find(u => u.email === email)) {
         showError('registerError', 'Email already registered. Please login.');
+        btn.classList.remove('btn-loading');
+        return;
+    }
+
+    // Check confirm password
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    if (password !== confirmPassword) {
+        showError('registerError', 'Passwords do not match. Please confirm your password.');
         btn.classList.remove('btn-loading');
         return;
     }
@@ -1738,6 +1769,143 @@ function creditUserWallet(username, amount) {
         localStorage.setItem('henboryx_users', JSON.stringify(users));
     }
 }
+        
+
+        // Password visibility toggle
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Forgot Password Functions
+        function openForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.add('active');
+            document.getElementById('forgotPasswordForm').reset();
+            document.getElementById('forgotError').style.display = 'none';
+            document.getElementById('forgotSuccess').style.display = 'none';
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.remove('active');
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const btn = document.getElementById('forgotBtn');
+            btn.classList.add('btn-loading');
+
+            const usernameOrEmail = document.getElementById('forgotUsernameOrEmail').value.toLowerCase().trim();
+
+            setTimeout(() => {
+                const user = users.find(u => u.username === usernameOrEmail || u.email === usernameOrEmail);
+
+                if (!user) {
+                    showError('forgotError', 'No account found with that username or email.');
+                    btn.classList.remove('btn-loading');
+                    return;
+                }
+
+                if (!user.email) {
+                    showError('forgotError', 'This account has no email address. Please contact admin for help.');
+                    btn.classList.remove('btn-loading');
+                    return;
+                }
+
+                // Generate reset token
+                const resetToken = 'RST_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                const resetExpiry = Date.now() + 3600000; // 1 hour
+
+                // Save reset token
+                let resetTokens = JSON.parse(localStorage.getItem('henboryx_reset_tokens')) || {};
+                resetTokens[user.username] = {
+                    token: resetToken,
+                    expiry: resetExpiry,
+                    email: user.email
+                };
+                localStorage.setItem('henboryx_reset_tokens', JSON.stringify(resetTokens));
+
+                // Try to send email
+                if (typeof emailjs !== 'undefined') {
+                    emailjs.send("service_4k2g19d", "template_reset_password", {
+                        to_email: user.email,
+                        to_name: user.name,
+                        reset_token: resetToken,
+                        reset_link: window.location.origin + window.location.pathname + '?reset=' + resetToken
+                    }).then(function(response) {
+                        document.getElementById('forgotSuccess').style.display = 'block';
+                        document.getElementById('forgotSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Reset link sent to your email!';
+                        setTimeout(closeForgotPasswordModal, 3000);
+                    }).catch(function(error) {
+                        showError('forgotError', 'Failed to send email. Please try again.');
+                    }).finally(function() {
+                        btn.classList.remove('btn-loading');
+                    });
+                } else {
+                    // For testing - show token directly
+                    document.getElementById('forgotSuccess').style.display = 'block';
+                    document.getElementById('forgotSuccess').innerHTML = '<i class="fas fa-check-circle"></i> Reset token: <strong>' + resetToken + '</strong><br><small>Use this token to reset your password.</small>';
+                    btn.classList.remove('btn-loading');
+                }
+            }, 1000);
+        }
+
+        // Check for reset token in URL on page load
+        (function checkResetToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const resetToken = urlParams.get('reset');
+
+            if (resetToken) {
+                const resetTokens = JSON.parse(localStorage.getItem('henboryx_reset_tokens')) || {};
+                let foundUser = null;
+                let foundUsername = null;
+
+                for (const [username, data] of Object.entries(resetTokens)) {
+                    if (data.token === resetToken && Date.now() < data.expiry) {
+                        foundUser = users.find(u => u.username === username);
+                        foundUsername = username;
+                        break;
+                    }
+                }
+
+                if (foundUser) {
+                    // Show password reset form
+                    const newPassword = prompt('Enter your new password (min 6 characters):');
+                    if (newPassword && newPassword.length >= 6) {
+                        const confirmPassword = prompt('Confirm your new password:');
+                        if (newPassword === confirmPassword) {
+                            const userIndex = users.findIndex(u => u.username === foundUsername);
+                            if (userIndex !== -1) {
+                                users[userIndex].password = newPassword;
+                                localStorage.setItem('henboryx_users', JSON.stringify(users));
+
+                                // Remove used token
+                                delete resetTokens[foundUsername];
+                                localStorage.setItem('henboryx_reset_tokens', JSON.stringify(resetTokens));
+
+                                alert('Password reset successful! Please login with your new password.');
+                                navigateTo('login');
+                            }
+                        } else {
+                            alert('Passwords do not match. Please try again.');
+                        }
+                    } else if (newPassword) {
+                        alert('Password must be at least 6 characters.');
+                    }
+                } else {
+                    alert('Invalid or expired reset link.');
+                }
+            }
+        })();
+
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('withdrawal-modal')) {
@@ -1746,7 +1914,31 @@ function creditUserWallet(username, amount) {
             if (e.target.classList.contains('payment-modal')) {
                 document.getElementById('paymentModal').classList.remove('active');
             }
+            if (e.target.id === 'forgotPasswordModal') {
+                closeForgotPasswordModal();
+            }
         });
     </script>
+
+    <!-- Forgot Password Modal -->
+    <div class="withdrawal-modal" id="forgotPasswordModal">
+        <div class="withdrawal-content" style="max-width: 450px;">
+            <h3><i class="fas fa-key" style="color: var(--primary);"></i> Reset Password</h3>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">Enter your username or email to reset your password.</p>
+            <div class="error-message" id="forgotError"></div>
+            <div class="success-message" id="forgotSuccess"></div>
+            <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username or Email</label>
+                    <input type="text" id="forgotUsernameOrEmail" required placeholder="Enter your username or email">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="forgotBtn">
+                    <i class="fas fa-paper-plane"></i> Send Reset Link<div class="spinner"></div>
+                </button>
+            </form>
+            <button onclick="closeForgotPasswordModal()" style="background: none; border: none; color: #999; margin-top: 15px; cursor: pointer; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem;">Back to Login</button>
+        </div>
+    </div>
+
 </body>
 </html>
