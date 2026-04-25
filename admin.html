@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HENBORYX Admin Dashboard - Paystack Integrated</title>
+    <title>HENBORYX Admin Dashboard - Secure Payment Integration</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -23,7 +23,9 @@
             --light: #f8f9fa;
             --shadow: 0 10px 30px rgba(0,0,0,0.1);
             --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
-            --paystack: #00C853;
+            --payment: #00C853;
+            --danger: #dc3545;
+            --warning: #ffc107;
         }
         body {
             font-family: 'Poppins', sans-serif;
@@ -126,7 +128,7 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(225, 112, 85, 0.4);
         }
-        .btn-paystack {
+        .btn-payment {
             background: linear-gradient(135deg, #00C853 0%, #00E676 100%);
             color: white;
             padding: 12px 25px;
@@ -139,7 +141,7 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-paystack:hover {
+        .btn-payment:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 200, 83, 0.4);
         }
@@ -214,7 +216,7 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
-        .paystack-badge {
+        .payment-badge {
             background: linear-gradient(135deg, #00C853 0%, #00E676 100%);
             color: white;
             padding: 8px 20px;
@@ -491,6 +493,7 @@
         }
         .status-paid { background: #e8f5e9; color: #2e7d32; }
         .status-pending { background: #fff3e0; color: #ef6c00; }
+        .status-processing { background: #e3f2fd; color: #1976d2; }
 
         .amount-display {
             font-weight: 700;
@@ -552,6 +555,10 @@
             border-color: var(--primary);
             box-shadow: var(--shadow);
         }
+        .withdrawal-card.urgent {
+            border-color: var(--accent);
+            background: #fff8f8;
+        }
         .withdrawal-header {
             display: flex;
             justify-content: space-between;
@@ -605,6 +612,7 @@
         }
         .status-pending-badge { background: #fff3e0; color: #ef6c00; }
         .status-approved-badge { background: #e8f5e9; color: #2e7d32; }
+        .status-success-badge { background: #e8f5e9; color: #2e7d32; }
         .status-rejected-badge { background: #ffebee; color: #c62828; }
         .status-processing-badge { background: #e3f2fd; color: #1976d2; }
 
@@ -670,36 +678,22 @@
             font-size: 1.1rem;
         }
 
-        /* Paystack Payment Modal */
-        .paystack-form {
-            margin-top: 20px;
-        }
-        .paystack-info {
+        /* Payment Payment Modal */
+        .payment-info {
             background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
             text-align: center;
-            border-left: 4px solid var(--paystack);
+            border-left: 4px solid var(--primary);
         }
-        .paystack-info h4 {
+        .payment-info h4 {
             color: var(--primary);
             margin-bottom: 10px;
         }
-        .paystack-info p {
+        .payment-info p {
             color: #666;
             font-size: 0.9rem;
-        }
-        .paystack-api-log {
-            background: #263238;
-            color: #aed581;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            margin-top: 15px;
-            max-height: 150px;
-            overflow-y: auto;
         }
 
         /* Notification */
@@ -851,7 +845,7 @@
             margin-top: 20px;
         }
         .history-table th {
-            background: linear-gradient(135deg, var(--paystack) 0%, #00E676 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #00E676 100%);
             color: white;
             padding: 12px;
             text-align: left;
@@ -869,8 +863,8 @@
             font-size: 0.85rem;
             color: var(--dark);
         }
-        .paystack-ref {
-            color: var(--paystack);
+        .payment-ref {
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -913,36 +907,77 @@
             opacity: 0.8;
         }
 
-        /* API Status Indicator */
-        .api-status {
-            display: inline-flex;
+        
+
+        
+
+        /* Processing Overlay */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10001;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        .processing-overlay.active {
+            display: flex;
+        }
+        .processing-spinner {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        #editUserModal .form-group {
+            margin-bottom: 15px;
+        }
+        #editUserModal .form-group label {
+            display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: var(--dark);
             font-weight: 500;
+            font-size: 0.9rem;
         }
-        .api-status.online {
-            background: #e8f5e9;
-            color: #2e7d32;
+        #editUserModal input,
+        #editUserModal select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
         }
-        .api-status.offline {
-            background: #ffebee;
-            color: #c62828;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        .api-status.online .status-dot {
-            background: #2e7d32;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        #editUserModal input:focus,
+        #editUserModal select:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         @media (max-width: 768px) {
@@ -991,6 +1026,8 @@
             }
         }
     </style>
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -1052,12 +1089,7 @@
                 HENBORYX Admin
             </div>
             <div class="nav-right">
-                <div class="paystack-badge">
-                    <i class="fas fa-check-circle"></i> Paystack Connected
-                    <span class="api-status online" style="margin-left: 10px; background: rgba(255,255,255,0.2); color: white;">
-                        <span class="status-dot"></span> Live
-                    </span>
-                </div>
+                
                 <span class="admin-badge"><i class="fas fa-crown"></i> Administrator</span>
                 <button class="logout-btn" onclick="adminLogout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -1066,6 +1098,12 @@
         </nav>
 
         <div class="dashboard">
+            <!-- Security Notice -->
+            
+
+            <!-- Backend Configuration Notice -->
+            
+
             <!-- Stats Overview -->
             <div class="stats-overview">
                 <div class="stat-card">
@@ -1088,20 +1126,20 @@
                     <div class="stat-number" id="totalRevenue">₦0</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-hand-holding-usd" style="color: var(--paystack);"></i>
-                    <div class="stat-number" id="pendingWithdrawals" style="color: var(--paystack);">0</div>
+                <div class="stat-card" style="border: 2px solid var(--accent);">
+                    <i class="fas fa-hand-holding-usd" style="color: var(--accent);"></i>
+                    <div class="stat-number" id="pendingWithdrawals" style="color: var(--accent);">0</div>
                     <div class="stat-label">Pending Withdrawals</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-check-circle" style="color: var(--paystack);"></i>
+                    <i class="fas fa-check-circle" style="color: var(--primary);"></i>
                     <div class="stat-number" id="approvedWithdrawals">0</div>
-                    <div class="stat-label">Paystack Transfers</div>
+                    <div class="stat-label">Approved Payments</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-wallet" style="color: var(--paystack);"></i>
-                    <div class="stat-number" id="paystackBalance">₦0</div>
-                    <div class="stat-label">Paystack Balance</div>
+                    <i class="fas fa-wallet" style="color: var(--primary);"></i>
+                    <div class="stat-number" id="totalWithdrawn">₦0</div>
+                    <div class="stat-label">Total Approved</div>
                 </div>
             </div>
 
@@ -1116,7 +1154,7 @@
                         <span class="badge" id="withdrawalBadge">0</span>
                     </button>
                     <button class="tab-btn" onclick="switchTab('history')">
-                        <i class="fas fa-history"></i> Paystack History
+                        <i class="fas fa-history"></i> Payment History
                     </button>
                     <button class="tab-btn" onclick="switchTab('network')">
                         <i class="fas fa-project-diagram"></i> User Network
@@ -1191,16 +1229,16 @@
                     </div>
                 </div>
 
-                <!-- Withdrawals Tab -->
+                <!-- Withdrawals Tab - FIXED -->
                 <div id="withdrawalsTab" class="tab-content">
                     <div class="filters-section">
                         <div class="filter-group">
                             <label>Filter Status</label>
                             <select id="withdrawalStatusFilter" onchange="filterWithdrawals()">
                                 <option value="all">All Requests</option>
-                                <option value="pending">Pending</option>
+                                <option value="pending">Pending Approval</option>
                                 <option value="processing">Processing</option>
-                                <option value="approved">Approved (Paystack)</option>
+                                <option value="approved">Completed</option>
                                 <option value="rejected">Rejected</option>
                             </select>
                         </div>
@@ -1208,17 +1246,33 @@
                             <i class="fas fa-download"></i> Export Withdrawals
                         </button>
                     </div>
-                    <div id="withdrawalsContainer">
-                        <!-- Withdrawal requests will be loaded here -->
+                    
+                    <!-- Pending Withdrawals Section -->
+                    <div class="users-table-container" style="margin-bottom: 20px;">
+                        <h3 style="color: var(--accent);">
+                            <i class="fas fa-bell"></i> Pending Withdrawal Requests 
+                            <span id="pendingCountBadge" style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; margin-left: 10px;">0</span>
+                        </h3>
+                        <div id="pendingWithdrawalsContainer">
+                            <!-- Pending withdrawals will load here -->
+                        </div>
+                    </div>
+
+                    <!-- All Withdrawals Section -->
+                    <div class="users-table-container">
+                        <h3><i class="fas fa-list"></i> All Withdrawal Requests</h3>
+                        <div id="withdrawalsContainer">
+                            <!-- All withdrawals will be loaded here -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- Paystack History Tab -->
+                <!-- Payment History Tab -->
                 <div id="historyTab" class="tab-content">
                     <div class="users-table-container">
-                        <h3><i class="fas fa-history" style="color: var(--paystack);"></i> Paystack Transfer History</h3>
+                        <h3><i class="fas fa-history" style="color: var(--primary);"></i> Payment Payment History</h3>
                         <p style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">
-                            All transfers processed through Paystack API. Reference codes and transfer codes are stored for reconciliation.
+                            All approved payments are logged here for record keeping.
                         </p>
                         <table class="history-table">
                             <thead>
@@ -1226,13 +1280,13 @@
                                     <th>Date</th>
                                     <th>User</th>
                                     <th>Amount</th>
-                                    <th>Paystack Reference</th>
-                                    <th>Transfer Code</th>
+                                    <th>Bank Details</th>
+                                    <th>Approved By</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="paystackHistoryBody">
+                            <tbody id="paymentHistoryBody">
                                 <!-- History will be loaded here -->
                             </tbody>
                         </table>
@@ -1375,6 +1429,9 @@
         </div>
     </div>
 
+    <!-- Processing Overlay -->
+    
+
     <!-- User Detail Modal -->
     <div class="modal" id="userDetailModal">
         <div class="modal-content" style="max-width: 700px;">
@@ -1388,28 +1445,22 @@
         </div>
     </div>
 
-    <!-- Process Withdrawal Modal (Paystack Integration) -->
+    <!-- Process Withdrawal Modal - FIXED FOR BACKEND INTEGRATION -->
     <div class="modal" id="processWithdrawalModal">
         <div class="modal-content wide">
-            <h3><i class="fas fa-money-check-alt" style="color: var(--paystack);"></i> Process Paystack Transfer</h3>
+            <h3><i class="fas fa-money-check-alt" style="color: var(--primary);"></i> Approve Withdrawal</h3>
             
-            <div class="paystack-info">
-                <h4><i class="fas fa-university"></i> Paystack API Integration</h4>
-                <p>This will initiate a real transfer from your Paystack balance to the user's bank account.</p>
-            </div>
+            
 
             <div id="withdrawalProcessContent">
                 <!-- Withdrawal details will be loaded here -->
             </div>
 
-            <div class="paystack-api-log" id="apiLog" style="display: none;">
-                <strong>API Request Log:</strong><br>
-                <span id="apiLogContent"></span>
-            </div>
+            
 
             <div class="withdrawal-actions" style="margin-top: 25px;">
-                <button class="btn-paystack" onclick="initiatePaystackTransfer()" style="flex: 1;">
-                    <i class="fas fa-paper-plane"></i> Send via Paystack
+                <button class="btn-success" onclick="approveManualWithdrawal()" style="flex: 1; padding: 15px 25px; font-size: 1rem; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Approve Payment
                 </button>
                 <button class="btn btn-danger" onclick="rejectWithdrawal()" style="flex: 1;">
                     <i class="fas fa-times"></i> Reject Request
@@ -1422,38 +1473,20 @@
         </div>
     </div>
 
-    <!-- Paystack OTP Modal (if required) -->
-    <div class="modal" id="otpModal">
-        <div class="modal-content">
-            <h3><i class="fas fa-shield-alt" style="color: var(--paystack);"></i> Paystack OTP Required</h3>
-            <p style="color: #666; margin-bottom: 20px; text-align: center;">
-                Enter the OTP sent to your registered phone number to complete this transfer.
-            </p>
-            <div class="form-group">
-                <label>OTP Code</label>
-                <input type="text" id="paystackOtp" placeholder="Enter 6-digit OTP" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 10px;">
-            </div>
-            <button class="btn-paystack" onclick="finalizeTransferWithOtp()" style="width: 100%; margin-top: 15px;">
-                <i class="fas fa-check"></i> Verify & Complete Transfer
-            </button>
-        </div>
-    </div>
-
     <script>
         // Admin credentials (in production, this should be server-side)
         const ADMIN_USERNAME = 'admin';
         const ADMIN_PASSWORD = 'henboryx2024';
         const ADMIN_EMAIL = 'basseyiyene@gmail.com';
 
-        // Paystack Configuration
-        const PAYSTACK_SECRET_KEY = 'sk_test_your_secret_key_here'; // Replace with your test/live key
-        const PAYSTACK_PUBLIC_KEY = 'pk_test_your_public_key_here';
+        // Backend API Configuration - CHANGE THIS TO YOUR ACTUAL BACKEND URL
+        const BACKEND_API_URL = window.location.origin; // e.g., 'https://yourdomain.com'
         
-        // Data from main site
+        // Data from main site (localStorage)
         let users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
         let referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
         let withdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
-        let paystackTransfers = JSON.parse(localStorage.getItem('henboryx_paystack_transfers')) || [];
+        let paymentTransfers = JSON.parse(localStorage.getItem('henboryx_payment_transfers')) || [];
         let manualUpgrades = JSON.parse(localStorage.getItem('henboryx_manual_upgrades')) || [];
 
         let currentPage = 1;
@@ -1461,7 +1494,7 @@
         let filteredUsers = [];
         let currentWithdrawalId = null;
         let currentWithdrawalUser = null;
-        let currentTransferCode = null;
+        let currentWithdrawalData = null;
         let selectedTargetStage = null;
         let currentNetworkUser = null;
 
@@ -1484,6 +1517,9 @@
             
             // Initialize manual stage user dropdown
             populateManualStageDropdown();
+            
+            // Sync data from user site (in real app, this would be from database)
+            syncWithdrawalData();
         });
 
         function handleAdminLogin(e) {
@@ -1570,17 +1606,32 @@
             }
         }
 
+        // CRITICAL FIX: Sync withdrawal data from user site
+        function syncWithdrawalData() {
+            // In a real app, this would fetch from your database API
+            // For now, we ensure localStorage is synced between user and admin views
+            
+            // Check if there are any pending withdrawals from users
+            const allWithdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
+            
+            // Update the global withdrawals variable
+            withdrawals = allWithdrawals;
+            
+            console.log('Synced withdrawals:', withdrawals);
+        }
+
         function loadDashboardData() {
+            // Reload data from localStorage to get latest
             users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
             referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
             withdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
-            paystackTransfers = JSON.parse(localStorage.getItem('henboryx_paystack_transfers')) || [];
+            paymentTransfers = JSON.parse(localStorage.getItem('henboryx_payment_transfers')) || [];
             manualUpgrades = JSON.parse(localStorage.getItem('henboryx_manual_upgrades')) || [];
 
             updateStatsOverview();
             filterUsers();
             loadWithdrawals();
-            loadPaystackHistory();
+            loadPaymentHistory();
             loadStageStats();
             populateManualStageDropdown();
             loadUpgradeLog();
@@ -1599,22 +1650,36 @@
             const totalRevenue = users.reduce((sum, u) => sum + (u.paymentAmount || 0), 0);
             document.getElementById('totalRevenue').textContent = '₦' + totalRevenue.toLocaleString();
 
+            // FIXED: Count pending withdrawals properly
             let pendingCount = 0;
             let approvedCount = 0;
+            let totalWithdrawn = 0;
+            
             Object.values(withdrawals).forEach(userWithdrawals => {
                 userWithdrawals.forEach(w => {
                     if (w.status === 'pending') pendingCount++;
-                    if (w.status === 'approved') approvedCount++;
+                    if (w.status === 'approved') {
+                        approvedCount++;
+                        totalWithdrawn += w.amount;
+                    }
                 });
             });
+            
             document.getElementById('pendingWithdrawals').textContent = pendingCount;
             document.getElementById('approvedWithdrawals').textContent = approvedCount;
             document.getElementById('withdrawalBadge').textContent = pendingCount;
-
-            // Calculate mock Paystack balance based on approved transfers
-            const totalTransferred = paystackTransfers.reduce((sum, t) => sum + (t.amount || 0), 0);
-            const mockBalance = 5000000 - totalTransferred; // Starting with 5M mock balance
-            document.getElementById('paystackBalance').textContent = '₦' + mockBalance.toLocaleString();
+            document.getElementById('totalWithdrawn').textContent = '₦' + totalWithdrawn.toLocaleString();
+            
+            // Update pending badge in withdrawals tab
+            const pendingBadge = document.getElementById('pendingCountBadge');
+            if (pendingBadge) {
+                pendingBadge.textContent = pendingCount;
+                if (pendingCount > 0) {
+                    pendingBadge.style.background = 'var(--accent)';
+                } else {
+                    pendingBadge.style.background = '#ccc';
+                }
+            }
         }
 
         function calculateTotalNetwork(userCode, visited = new Set()) {
@@ -1666,7 +1731,7 @@
             document.getElementById(tabName + 'Tab').classList.add('active');
             
             if (tabName === 'withdrawals') loadWithdrawals();
-            if (tabName === 'history') loadPaystackHistory();
+            if (tabName === 'history') loadPaymentHistory();
             if (tabName === 'stages') loadStageStats();
             if (tabName === 'network') loadNetworkTree();
             if (tabName === 'manualstage') {
@@ -1779,6 +1844,9 @@
                                 <button class="btn btn-primary btn-sm" onclick="viewUserDetails('${user.username}')">
                                     <i class="fas fa-eye"></i> View
                                 </button>
+                                <button class="btn btn-warning btn-sm" onclick="openEditUserModal('${user.username}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -1875,7 +1943,7 @@
                         <p>${new Date(user.joinedDate).toLocaleString()}</p>
                     </div>
                     <div class="detail-box">
-                        <h4>Total Withdrawn</h4>
+                        <h4>Total Approved</h4>
                         <p style="color: var(--accent);">₦${totalWithdrawn.toLocaleString()}</p>
                     </div>
                     <div class="detail-box">
@@ -1901,9 +1969,14 @@
             document.getElementById('userDetailModal').classList.remove('active');
         }
 
-        // Withdrawal Functions with Paystack Integration
+        // ============================================
+        // FIXED WITHDRAWAL FUNCTIONS
+        // ============================================
+
         function loadWithdrawals() {
-            const container = document.getElementById('withdrawalsContainer');
+            // Sync latest data
+            withdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
+            
             const statusFilter = document.getElementById('withdrawalStatusFilter').value;
             
             let allWithdrawals = [];
@@ -1918,6 +1991,100 @@
             }
 
             allWithdrawals.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Update pending count badge
+            const pendingCount = allWithdrawals.filter(w => w.status === 'pending').length;
+            const pendingBadge = document.getElementById('pendingCountBadge');
+            if (pendingBadge) {
+                pendingBadge.textContent = pendingCount;
+                pendingBadge.style.background = pendingCount > 0 ? 'var(--accent)' : '#ccc';
+            }
+
+            // Render pending withdrawals separately
+            renderPendingWithdrawals(allWithdrawals.filter(w => w.status === 'pending'));
+
+            // Render all withdrawals
+            renderAllWithdrawals(allWithdrawals);
+        }
+
+        function renderPendingWithdrawals(pendingWithdrawals) {
+            const container = document.getElementById('pendingWithdrawalsContainer');
+            
+            if (pendingWithdrawals.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data" style="padding: 30px;">
+                        <i class="fas fa-check-circle" style="color: var(--primary);"></i>
+                        <p>No pending withdrawal requests</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            pendingWithdrawals.forEach(w => {
+                const user = users.find(u => u.username === w.username);
+                if (!user) return;
+
+                const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const stagesText = w.stages.map(s => stages[s].name).join(', ');
+                
+                html += `
+                    <div class="withdrawal-card urgent">
+                        <div class="withdrawal-header">
+                            <div class="withdrawal-user">
+                                <div class="user-avatar" style="background: var(--accent);">${initials}</div>
+                                <div>
+                                    <h4 style="color: var(--dark);">${user.name}</h4>
+                                    <p style="color: #888; font-size: 0.9rem;">@${user.username} • ${new Date(w.date).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="withdrawal-amount" style="color: var(--accent);">₦${w.amount.toLocaleString()}</div>
+                                <span class="status-badge status-pending-badge">PENDING</span>
+                            </div>
+                        </div>
+                        <div class="withdrawal-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Bank Name</span>
+                                <span class="detail-value">${w.bankName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Account Number</span>
+                                <span class="detail-value">${w.accountNumber}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Account Name</span>
+                                <span class="detail-value">${w.accountName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Stages Completed</span>
+                                <span class="detail-value">${stagesText}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Request ID</span>
+                                <span class="detail-value" style="font-family: monospace; font-size: 0.85rem;">${w.id}</span>
+                            </div>
+                        </div>
+                        <div class="withdrawal-actions">
+                            <button class="btn-payment" onclick="openProcessWithdrawal('${w.id}', '${w.username}')">
+                                <i class="fas fa-paper-plane"></i> Process Transfer
+                            </button>
+                            <button class="btn btn-danger" onclick="quickReject('${w.id}', '${w.username}')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                            <button class="btn btn-primary" onclick="viewUserDetails('${user.username}')">
+                                <i class="fas fa-eye"></i> View User
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderAllWithdrawals(allWithdrawals) {
+            const container = document.getElementById('withdrawalsContainer');
 
             if (allWithdrawals.length === 0) {
                 container.innerHTML = `
@@ -1949,7 +2116,7 @@
                             </div>
                             <div style="text-align: right;">
                                 <div class="withdrawal-amount">₦${w.amount.toLocaleString()}</div>
-                                <span class="status-badge status-${w.status}-badge">${w.status.toUpperCase()}</span>
+                                <span class="status-badge status-${w.status}-badge">${w.status === 'success' || w.status === 'approved' ? 'SUCCESS' : w.status.toUpperCase()}</span>
                             </div>
                         </div>
                         <div class="withdrawal-details">
@@ -1969,23 +2136,23 @@
                                 <span class="detail-label">Stages Completed</span>
                                 <span class="detail-value">${stagesText}</span>
                             </div>
-                            ${w.paystackReference ? `
+                            ${w.paymentReference ? `
                             <div class="detail-item">
-                                <span class="detail-label">Paystack Ref</span>
-                                <span class="detail-value paystack-ref">${w.paystackReference}</span>
+                                <span class="detail-label">Reference</span>
+                                <span class="detail-value payment-ref">${w.paymentReference}</span>
                             </div>
                             ` : ''}
-                            ${w.transferCode ? `
+                            ${w.processedDate ? `
                             <div class="detail-item">
-                                <span class="detail-label">Transfer Code</span>
-                                <span class="detail-value transfer-code">${w.transferCode}</span>
+                                <span class="detail-label">Processed</span>
+                                <span class="detail-value">${new Date(w.processedDate).toLocaleString()}</span>
                             </div>
                             ` : ''}
                         </div>
                         ${w.status === 'pending' ? `
                         <div class="withdrawal-actions">
-                            <button class="btn-paystack" onclick="openProcessWithdrawal('${w.id}', '${w.username}')">
-                                <i class="fas fa-paper-plane"></i> Process via Paystack
+                            <button class="btn-payment" onclick="openProcessWithdrawal('${w.id}', '${w.username}')">
+                                <i class="fas fa-paper-plane"></i> Process Transfer
                             </button>
                             <button class="btn btn-danger" onclick="quickReject('${w.id}', '${w.username}')">
                                 <i class="fas fa-times"></i> Reject
@@ -1995,7 +2162,7 @@
                         <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                             <p style="color: #888; font-size: 0.9rem;">
                                 <i class="fas fa-info-circle"></i> 
-                                ${w.status === 'approved' ? 'Paystack transfer completed on ' + new Date(w.processedDate).toLocaleString() : 'Request rejected'}
+                                ${w.status === 'approved' ? 'Transfer completed on ' + new Date(w.processedDate).toLocaleString() : 'Request rejected'}
                             </p>
                         </div>
                         `}
@@ -2018,7 +2185,12 @@
             const userWithdrawals = withdrawals[username] || [];
             const withdrawal = userWithdrawals.find(w => w.id.toString() === withdrawalId.toString());
             
-            if (!withdrawal) return;
+            if (!withdrawal) {
+                showNotification('Error', 'Withdrawal request not found', 'error');
+                return;
+            }
+
+            currentWithdrawalData = withdrawal;
 
             const content = `
                 <div style="margin-bottom: 20px;">
@@ -2032,10 +2204,10 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div class="detail-box">
                             <h4>Amount</h4>
-                            <p style="color: var(--paystack); font-size: 1.5rem;">₦${withdrawal.amount.toLocaleString()}</p>
+                            <p style="color: var(--primary); font-size: 1.5rem;">₦${withdrawal.amount.toLocaleString()}</p>
                         </div>
                         <div class="detail-box">
-                            <h4>Fee (2%)</h4>
+                            <h4>Fee (Payment)</h4>
                             <p>₦${(withdrawal.amount * 0.02).toFixed(0)}</p>
                         </div>
                     </div>
@@ -2045,187 +2217,167 @@
                         <p>${withdrawal.accountNumber}</p>
                         <p>${withdrawal.accountName}</p>
                     </div>
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
-                        <p style="font-size: 0.9rem; color: #1976d2;">
-                            <i class="fas fa-info-circle"></i> 
-                            This will initiate a real Paystack transfer. Ensure your Paystack balance is sufficient.
-                        </p>
+                    <div class="detail-box" style="margin-bottom: 15px;">
+                        <h4>Withdrawal Stages</h4>
+                        <p>${withdrawal.stages.map(s => stages[s].name).join(', ')}</p>
                     </div>
                 </div>
             `;
 
             document.getElementById('withdrawalProcessContent').innerHTML = content;
             document.getElementById('processWithdrawalModal').classList.add('active');
-            
-            // Show API log area
-            document.getElementById('apiLog').style.display = 'block';
-            document.getElementById('apiLogContent').textContent = 'Ready to initiate transfer...';
         }
 
         function closeProcessWithdrawalModal() {
             document.getElementById('processWithdrawalModal').classList.remove('active');
-            document.getElementById('apiLog').style.display = 'none';
             currentWithdrawalId = null;
             currentWithdrawalUser = null;
-            currentTransferCode = null;
+            currentWithdrawalData = null;
         }
 
-        // Paystack Transfer Integration
-        async function initiatePaystackTransfer() {
-            if (!currentWithdrawalId || !currentWithdrawalUser) return;
-
-            const user = users.find(u => u.username === currentWithdrawalUser);
-            const userWithdrawals = withdrawals[currentWithdrawalUser];
-            const withdrawal = userWithdrawals.find(w => w.id.toString() === currentWithdrawalId.toString());
-            
-            if (!withdrawal) return;
-
-            // Update UI to show processing
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            btn.disabled = true;
-
-            try {
-                // Step 1: Create Paystack Recipient (if not exists)
-                document.getElementById('apiLogContent').innerHTML += '<br>> Creating transfer recipient...';
-                
-                // In production, this would be a real API call to your backend
-                // which then calls Paystack API with your secret key
-                
-                // Mock recipient creation (in production, use real API)
-                const recipientCode = 'RCP_' + Math.random().toString(36).substr(2, 9);
-                
-                // Step 2: Initiate Transfer
-                document.getElementById('apiLogContent').innerHTML += '<br>> Initiating transfer via Paystack API...';
-                
-                // Mock API call - In production:
-                // const response = await fetch('https://api.paystack.co/transfer', {
-                //     method: 'POST',
-                //     headers: {
-                //         'Authorization': 'Bearer ' + PAYSTACK_SECRET_KEY,
-                //         'Content-Type': 'application/json'
-                //     },
-                //     body: JSON.stringify({
-                //         source: "balance",
-                //         amount: withdrawal.amount * 100, // Paystack uses kobo
-                //         recipient: recipientCode,
-                //         reason: "HENBORYX Withdrawal - " + withdrawal.id,
-                //         reference: "TRF_" + Date.now() + "_" + withdrawal.id
-                //     })
-                // });
-                
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
-                
-                // Mock successful response
-                const transferCode = 'TRF_' + Math.random().toString(36).substr(2, 9);
-                const reference = 'TRF_' + Date.now() + '_' + withdrawal.id;
-                
-                document.getElementById('apiLogContent').innerHTML += '<br>> Transfer initiated successfully!';
-                document.getElementById('apiLogContent').innerHTML += '<br>> Transfer Code: ' + transferCode;
-                
-                // Step 3: Update withdrawal status
-                const withdrawalIndex = userWithdrawals.findIndex(w => w.id.toString() === currentWithdrawalId.toString());
-                if (withdrawalIndex !== -1) {
-                    withdrawals[currentWithdrawalUser][withdrawalIndex].status = 'approved';
-                    withdrawals[currentWithdrawalUser][withdrawalIndex].processedDate = new Date().toISOString();
-                    withdrawals[currentWithdrawalUser][withdrawalIndex].transferCode = transferCode;
-                    withdrawals[currentWithdrawalUser][withdrawalIndex].paystackReference = reference;
-                    localStorage.setItem('henboryx_withdrawals', JSON.stringify(withdrawals));
-                }
-
-                // Step 4: Deduct from user's balance/wallet
-                const userIndex = users.findIndex(u => u.username === currentWithdrawalUser);
-                if (userIndex !== -1) {
-                    // Deduct from user's earnings/wallet
-                    if (!users[userIndex].wallet) users[userIndex].wallet = 0;
-                    if (!users[userIndex].totalWithdrawn) users[userIndex].totalWithdrawn = 0;
-                    
-                    users[userIndex].wallet -= withdrawal.amount;
-                    users[userIndex].totalWithdrawn += withdrawal.amount;
-                    localStorage.setItem('henboryx_users', JSON.stringify(users));
-                }
-
-                // Step 5: Log to Paystack history
-                paystackTransfers.push({
-                    id: 'PST_' + Date.now(),
-                    username: currentWithdrawalUser,
-                    userName: user.name,
-                    amount: withdrawal.amount,
-                    reference: reference,
-                    transferCode: transferCode,
-                    bankName: withdrawal.bankName,
-                    accountNumber: withdrawal.accountNumber,
-                    status: 'success',
-                    date: new Date().toISOString(),
-                    fee: withdrawal.amount * 0.02
-                });
-                localStorage.setItem('henboryx_paystack_transfers', JSON.stringify(paystackTransfers));
-
-                // Step 6: Send email notification
-                if (user && user.email) {
-                    sendWithdrawalApprovalEmail(user, withdrawal, transferCode);
-                }
-
-                showNotification('Paystack Transfer Successful!', 
-                    `₦${withdrawal.amount.toLocaleString()} sent to ${user.name}. Transfer Code: ${transferCode}`, 'success');
-                
-                closeProcessWithdrawalModal();
-                loadWithdrawals();
-                loadPaystackHistory();
-                updateStatsOverview();
-
-            } catch (error) {
-                document.getElementById('apiLogContent').innerHTML += '<br>> ERROR: ' + error.message;
-                showNotification('Transfer Failed', error.message, 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
+        
+        
 
         function rejectWithdrawal() {
-            if (!currentWithdrawalId || !currentWithdrawalUser) return;
+    if (!currentWithdrawalId || !currentWithdrawalUser) return;
 
-            const userWithdrawals = withdrawals[currentWithdrawalUser];
-            const withdrawalIndex = userWithdrawals.findIndex(w => w.id.toString() === currentWithdrawalId.toString());
-            
-            if (withdrawalIndex === -1) return;
+    if (!confirm('Are you sure you want to reject this withdrawal request?')) {
+        closeProcessWithdrawalModal();
+        return;
+    }
 
-            withdrawals[currentWithdrawalUser][withdrawalIndex].status = 'rejected';
-            withdrawals[currentWithdrawalUser][withdrawalIndex].processedDate = new Date().toISOString();
-            localStorage.setItem('henboryx_withdrawals', JSON.stringify(withdrawals));
+    const userWithdrawals = withdrawals[currentWithdrawalUser] || [];
+    const withdrawalIndex = userWithdrawals.findIndex(
+        w => w.id.toString() === currentWithdrawalId.toString()
+    );
 
-            const user = users.find(u => u.username === currentWithdrawalUser);
-            if (user && user.email) {
-                sendWithdrawalRejectionEmail(user, withdrawals[currentWithdrawalUser][withdrawalIndex]);
+    if (withdrawalIndex === -1) return;
+
+    withdrawals[currentWithdrawalUser][withdrawalIndex].status = 'rejected';
+    withdrawals[currentWithdrawalUser][withdrawalIndex].processedDate = new Date().toISOString();
+    withdrawals[currentWithdrawalUser][withdrawalIndex].rejectedBy = ADMIN_USERNAME;
+    localStorage.setItem('henboryx_withdrawals', JSON.stringify(withdrawals));
+
+    const user = users.find(u => u.username === currentWithdrawalUser);
+    if (user && user.email && typeof emailjs !== 'undefined') {
+        emailjs.send("service_4k2g19d", "template_withdrawal_rejected", {
+            to_email: user.email,
+            to_name: user.name,
+            amount: '₦' + userWithdrawals[withdrawalIndex].amount.toLocaleString(),
+            reason: 'Please contact admin for more information.'
+        }).catch(function(error) {
+            console.log('Rejection email failed:', error);
+        });
+    }
+
+    showNotification('Withdrawal Rejected', 'Request has been rejected and user notified.', 'error');
+    closeProcessWithdrawalModal();
+    loadWithdrawals();
+    updateStatsOverview();
+}
+
+        function approveManualWithdrawal() {
+            if (!currentWithdrawalId || !currentWithdrawalUser || !currentWithdrawalData) {
+                showNotification('Error', 'No withdrawal selected', 'error');
+                return;
             }
 
-            showNotification('Withdrawal Rejected', 'Request has been rejected and user notified.', 'error');
+            if (!confirm('Are you sure you want to approve this withdrawal? This will mark it as successfully paid.')) {
+                return;
+            }
+
+            // Update withdrawal status to success
+            const userWithdrawals = withdrawals[currentWithdrawalUser] || [];
+            const withdrawalIndex = userWithdrawals.findIndex(
+                w => w.id.toString() === currentWithdrawalId.toString()
+            );
+
+            if (withdrawalIndex === -1) {
+                showNotification('Error', 'Withdrawal request not found', 'error');
+                return;
+            }
+
+            const now = new Date().toISOString();
+
+            // Update the withdrawal
+            withdrawals[currentWithdrawalUser][withdrawalIndex].status = 'success';
+            withdrawals[currentWithdrawalUser][withdrawalIndex].processedDate = now;
+            withdrawals[currentWithdrawalUser][withdrawalIndex].approvedBy = ADMIN_USERNAME;
+            withdrawals[currentWithdrawalUser][withdrawalIndex].approvalMethod = 'manual';
+
+            localStorage.setItem('henboryx_withdrawals', JSON.stringify(withdrawals));
+
+            // Add to payment history
+            const paymentRecord = {
+                date: now,
+                username: currentWithdrawalUser,
+                userName: currentWithdrawalData.accountName,
+                amount: currentWithdrawalData.amount,
+                bankName: currentWithdrawalData.bankName,
+                accountNumber: currentWithdrawalData.accountNumber,
+                accountName: currentWithdrawalData.accountName,
+                approvedBy: ADMIN_USERNAME,
+                withdrawalId: currentWithdrawalId,
+                status: 'success'
+            };
+
+            let paymentHistory = JSON.parse(localStorage.getItem('henboryx_payment_history')) || [];
+            paymentHistory.push(paymentRecord);
+            localStorage.setItem('henboryx_payment_history', JSON.stringify(paymentHistory));
+
+            // Send email notification if available
+            const user = users.find(u => u.username === currentWithdrawalUser);
+            if (user && user.email && typeof emailjs !== 'undefined') {
+                emailjs.send("service_4k2g19d", "template_withdrawal_approved", {
+                    to_email: user.email,
+                    to_name: user.name,
+                    amount: '₦' + currentWithdrawalData.amount.toLocaleString(),
+                    bank_name: currentWithdrawalData.bankName,
+                    account_number: currentWithdrawalData.accountNumber,
+                    account_name: currentWithdrawalData.accountName,
+                    processed_date: new Date().toLocaleString(),
+                    approved_by: ADMIN_USERNAME
+                }).catch(function(error) {
+                    console.log('Email failed:', error);
+                });
+            }
+
+            showNotification(
+                'Payment Approved!', 
+                '₦' + currentWithdrawalData.amount.toLocaleString() + ' marked as successfully paid to ' + currentWithdrawalData.accountName + '.',
+                'success'
+            );
+
             closeProcessWithdrawalModal();
             loadWithdrawals();
             updateStatsOverview();
+            loadPaymentHistory();
         }
 
         function quickReject(withdrawalId, username) {
             if (!confirm('Are you sure you want to reject this withdrawal request?')) return;
-            
+
             currentWithdrawalId = withdrawalId;
             currentWithdrawalUser = username;
+
+            const userWithdrawals = withdrawals[username] || [];
+            currentWithdrawalData = userWithdrawals.find(w => w.id.toString() === withdrawalId.toString());
+
             rejectWithdrawal();
         }
 
-        // Paystack History Functions
-        function loadPaystackHistory() {
-            const tbody = document.getElementById('paystackHistoryBody');
-            
-            if (paystackTransfers.length === 0) {
+        // Payment History Functions
+        function loadPaymentHistory() {
+            const tbody = document.getElementById('paymentHistoryBody');
+            const paymentHistory = JSON.parse(localStorage.getItem('henboryx_payment_history')) || [];
+
+            if (paymentHistory.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 40px;">
                             <div class="no-data">
                                 <i class="fas fa-inbox"></i>
-                                <p>No Paystack transfers yet</p>
+                                <p>No approved payments yet</p>
                             </div>
                         </td>
                     </tr>
@@ -2234,57 +2386,55 @@
             }
 
             // Sort by date descending
-            const sorted = [...paystackTransfers].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
+            const sorted = [...paymentHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+
             let html = '';
             sorted.forEach(t => {
+                const user = users.find(u => u.username === t.username);
                 html += `
                     <tr>
                         <td>${new Date(t.date).toLocaleString()}</td>
                         <td>
                             <div class="user-info">
                                 <div class="user-avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">
-                                    ${t.userName ? t.userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'TR'}
+                                    ${t.userName ? t.userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'PY'}
                                 </div>
                                 <span>${t.userName || t.username}</span>
                             </div>
                         </td>
                         <td class="amount-display">₦${t.amount.toLocaleString()}</td>
-                        <td class="paystack-ref">${t.reference}</td>
-                        <td class="transfer-code">${t.transferCode}</td>
                         <td>
-                            <span class="payment-status ${t.status === 'success' ? 'status-paid' : 'status-pending'}">
-                                ${t.status === 'success' ? 'Success' : 'Pending'}
+                            <div style="font-size: 0.85rem;">
+                                <div><strong>${t.bankName}</strong></div>
+                                <div style="color: #888;">${t.accountNumber}</div>
+                            </div>
+                        </td>
+                        <td><span style="font-weight: 600; color: var(--primary);">${t.approvedBy || 'Admin'}</span></td>
+                        <td>
+                            <span class="payment-status status-paid">
+                                Success
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-primary btn-sm" onclick="verifyPaystackTransfer('${t.transferCode}')">
-                                <i class="fas fa-search"></i> Verify
+                            <button class="btn btn-primary btn-sm" onclick="viewPaymentDetails('${t.withdrawalId || ''}')">
+                                <i class="fas fa-eye"></i> View
                             </button>
                         </td>
                     </tr>
                 `;
             });
-            
+
             tbody.innerHTML = html;
         }
 
-        async function verifyPaystackTransfer(transferCode) {
-            // In production, this would call your backend which verifies with Paystack
-            // GET https://api.paystack.co/transfer/{transfer_code}
-            
-            showNotification('Verifying...', 'Checking transfer status with Paystack API', 'info');
-            
-            // Mock verification
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            showNotification('Transfer Verified', 'Transfer status: SUCCESS - Funds delivered to recipient bank account', 'success');
+        function verifyTransferStatus(reference) {
+            showNotification('Payment Verified', 'This payment was manually approved by admin.', 'success');
         }
 
         // Email Functions
-        function sendWithdrawalApprovalEmail(user, withdrawal, transferCode) {
+        function sendWithdrawalApprovalEmail(user, withdrawal) {
             if (typeof emailjs === 'undefined') return;
-            
+
             emailjs.send("service_4k2g19d", "template_withdrawal_approved", {
                 to_email: user.email,
                 to_name: user.name,
@@ -2292,8 +2442,8 @@
                 bank_name: withdrawal.bankName,
                 account_number: withdrawal.accountNumber,
                 account_name: withdrawal.accountName,
-                transfer_code: transferCode,
-                processed_date: new Date().toLocaleString()
+                processed_date: new Date().toLocaleString(),
+                approved_by: ADMIN_USERNAME
             }).then(function(response) {
                 console.log('Approval email sent!', response);
             }).catch(function(error) {
@@ -2336,7 +2486,6 @@
         function loadNetworkTree() {
             const container = document.getElementById('networkTree');
             
-            // If no user selected, use first user as example
             if (!currentNetworkUser && users.length > 0) {
                 currentNetworkUser = users[0];
             }
@@ -2346,11 +2495,9 @@
                 return;
             }
 
-            // Build 2x2 matrix tree
             const user = currentNetworkUser;
             const directRefs = referrals[user.referralCode] || [];
             
-            // Find level 2 referrals
             const level2Refs = [];
             directRefs.forEach(ref => {
                 const refUser = users.find(u => u.email === ref.email || u.username === ref.username);
@@ -2363,7 +2510,6 @@
                 }
             });
 
-            // Render tree
             let html = `
                 <div class="tree-level">
                     <div class="tree-node">
@@ -2377,7 +2523,6 @@
                 <div class="tree-level">
             `;
 
-            // Level 1 - 2 nodes max for 2x2
             for (let i = 0; i < 2; i++) {
                 const ref = directRefs[i];
                 if (ref) {
@@ -2417,8 +2562,6 @@
             html += '</div>';
 
             container.innerHTML = html;
-
-            // Load downline table
             loadDownlineTable(user);
         }
 
@@ -2426,7 +2569,6 @@
             const tbody = document.getElementById('downlineTableBody');
             let html = '';
             
-            // Level 1
             const directRefs = referrals[rootUser.referralCode] || [];
             directRefs.forEach((ref, idx) => {
                 const refUser = users.find(u => u.email === ref.email || u.username === ref.username);
@@ -2449,7 +2591,6 @@
                         </tr>
                     `;
                     
-                    // Level 2
                     const childRefs = referrals[refUser.referralCode] || [];
                     childRefs.forEach(child => {
                         const childUser = users.find(u => u.email === child.email || u.username === child.username);
@@ -2566,7 +2707,6 @@
             
             if (!confirm(`Force upgrade ${user.name} from Stage ${currentStage} to Stage ${selectedTargetStage}?`)) return;
             
-            // Update user stage
             const userIndex = users.findIndex(u => u.username === username);
             if (userIndex !== -1) {
                 users[userIndex].stage = selectedTargetStage;
@@ -2575,7 +2715,6 @@
                 localStorage.setItem('henboryx_users', JSON.stringify(users));
             }
             
-            // Log the upgrade
             manualUpgrades.push({
                 date: new Date().toISOString(),
                 admin: ADMIN_USERNAME,
@@ -2589,7 +2728,6 @@
             
             showNotification('Stage Upgraded', `${user.name} has been moved to Stage ${selectedTargetStage}`, 'success');
             
-            // Reset selection
             document.getElementById('manualStageUser').value = '';
             document.getElementById('currentUserStage').value = '';
             document.querySelectorAll('.stage-option').forEach(opt => opt.classList.remove('selected'));
@@ -2669,7 +2807,7 @@
         }
 
         function exportWithdrawalsToCSV() {
-            const headers = ['Username', 'Name', 'Amount', 'Bank Name', 'Account Number', 'Account Name', 'Stages', 'Status', 'Request Date', 'Processed Date', 'Paystack Reference', 'Transfer Code'];
+            const headers = ['Username', 'Name', 'Amount', 'Bank Name', 'Account Number', 'Account Name', 'Stages', 'Status', 'Request Date', 'Processed Date', 'Reference'];
 
             let csvContent = headers.join(',') + '\n';
 
@@ -2688,8 +2826,7 @@
                         w.status,
                         new Date(w.date).toLocaleString(),
                         w.processedDate ? new Date(w.processedDate).toLocaleString() : '',
-                        w.paystackReference || '',
-                        w.transferCode || ''
+                        w.paymentReference || ''
                     ];
                     csvContent += row.join(',') + '\n';
                 });
@@ -2732,6 +2869,104 @@
             setTimeout(() => notification.remove(), 5000);
         }
 
+        
+        // Edit User Functions
+        let currentEditUsername = null;
+
+        function openEditUserModal(username) {
+            const user = users.find(u => u.username === username);
+            if (!user) return;
+
+            currentEditUsername = username;
+
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editName').value = user.name || '';
+            document.getElementById('editEmail').value = user.email || '';
+            document.getElementById('editPhone').value = user.phone || '';
+            document.getElementById('editStage').value = user.stage || 0;
+            document.getElementById('editWallet').value = user.wallet || 0;
+            document.getElementById('editEarnings').value = user.earnings || 0;
+            document.getElementById('editPaymentStatus').value = user.paymentStatus || 'pending';
+
+            if (user.bankDetails) {
+                document.getElementById('editBankName').value = user.bankDetails.bankName || '';
+                document.getElementById('editAccountNumber').value = user.bankDetails.accountNumber || '';
+                document.getElementById('editAccountName').value = user.bankDetails.accountName || '';
+            } else {
+                document.getElementById('editBankName').value = '';
+                document.getElementById('editAccountNumber').value = '';
+                document.getElementById('editAccountName').value = '';
+            }
+
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('active');
+            currentEditUsername = null;
+            document.getElementById('editUserForm').reset();
+            document.getElementById('editUserError').style.display = 'none';
+            document.getElementById('editUserSuccess').style.display = 'none';
+        }
+
+        function saveUserChanges(e) {
+            e.preventDefault();
+
+            if (!currentEditUsername) return;
+
+            const userIndex = users.findIndex(u => u.username === currentEditUsername);
+            if (userIndex === -1) return;
+
+            const updatedUser = { ...users[userIndex] };
+
+            updatedUser.name = document.getElementById('editName').value.trim();
+            updatedUser.email = document.getElementById('editEmail').value.trim();
+            updatedUser.phone = document.getElementById('editPhone').value.trim();
+            updatedUser.stage = parseInt(document.getElementById('editStage').value);
+            updatedUser.wallet = parseFloat(document.getElementById('editWallet').value) || 0;
+            updatedUser.earnings = parseFloat(document.getElementById('editEarnings').value) || 0;
+            updatedUser.paymentStatus = document.getElementById('editPaymentStatus').value;
+
+            updatedUser.bankDetails = {
+                bankName: document.getElementById('editBankName').value.trim(),
+                accountNumber: document.getElementById('editAccountNumber').value.trim(),
+                accountName: document.getElementById('editAccountName').value.trim()
+            };
+
+            // Update user in array
+            users[userIndex] = updatedUser;
+            localStorage.setItem('henboryx_users', JSON.stringify(users));
+
+            showSuccess('editUserSuccess', 'User profile updated successfully!');
+
+            setTimeout(() => {
+                closeEditUserModal();
+                filterUsers();
+                updateStatsOverview();
+                populateManualStageDropdown();
+            }, 1500);
+        }
+
+        function viewPaymentDetails(withdrawalId) {
+            // Find the withdrawal details
+            let foundWithdrawal = null;
+            let foundUser = null;
+
+            Object.entries(withdrawals).forEach(([username, userWithdrawals]) => {
+                const w = userWithdrawals.find(withdrawal => withdrawal.id.toString() === withdrawalId.toString());
+                if (w) {
+                    foundWithdrawal = w;
+                    foundUser = users.find(u => u.username === username);
+                }
+            });
+
+            if (foundWithdrawal && foundUser) {
+                viewUserDetails(foundUser.username);
+            } else {
+                showNotification('Not Found', 'Payment details not found', 'error');
+            }
+        }
+
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
@@ -2739,19 +2974,92 @@
             }
         });
 
-        // Auto refresh every 30 seconds
+        // Auto refresh data
         setInterval(() => {
             if (sessionStorage.getItem('henboryx_admin')) {
-                users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
-                referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
+                // Reload data from localStorage to catch new withdrawals
                 withdrawals = JSON.parse(localStorage.getItem('henboryx_withdrawals')) || {};
-                paystackTransfers = JSON.parse(localStorage.getItem('henboryx_paystack_transfers')) || [];
+                users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
+                
                 updateStatsOverview();
                 renderTable();
                 loadWithdrawals();
-                loadPaystackHistory();
+                loadPaymentHistory();
             }
-        }, 30000);
+        }, 10000); // Check every 10 seconds for new withdrawals
     </script>
+
+    <!-- Edit User Modal -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3><i class="fas fa-user-edit" style="color: var(--primary);"></i> Edit User Profile</h3>
+            <div class="error-message" id="editUserError"></div>
+            <div class="success-message" id="editUserSuccess"></div>
+            <form id="editUserForm" onsubmit="saveUserChanges(event)">
+                <input type="hidden" id="editUsername">
+                <div class="user-detail-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="editEmail">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Phone</label>
+                        <input type="tel" id="editPhone">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-university"></i> Bank Name</label>
+                        <input type="text" id="editBankName">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-credit-card"></i> Account Number</label>
+                        <input type="text" id="editAccountNumber">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-circle"></i> Account Name</label>
+                        <input type="text" id="editAccountName">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group"></i> Stage</label>
+                        <select id="editStage" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <option value="0">Starter</option>
+                            <option value="1">Stage 1</option>
+                            <option value="2">Stage 2</option>
+                            <option value="3">Stage 3</option>
+                            <option value="4">Stage 4</option>
+                            <option value="5">Stage 5</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-wallet"></i> Wallet Balance (₦)</label>
+                        <input type="number" id="editWallet" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Total Earnings (₦)</label>
+                        <input type="number" id="editEarnings" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-toggle-on"></i> Payment Status</label>
+                        <select id="editPaymentStatus" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeEditUserModal()" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
