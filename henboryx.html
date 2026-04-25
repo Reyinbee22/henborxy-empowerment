@@ -515,11 +515,11 @@
                             <i class="fas fa-eye" id="toggleLoginPassword" onclick="togglePassword('loginPassword', 'toggleLoginPassword')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 1rem;"></i>
                         </div>
                     </div>
+                    <div style="text-align: right; margin-bottom: 15px;">
+                        <a onclick="openForgotPasswordModal()" style="color: var(--primary); cursor: pointer; font-size: 0.85rem; font-weight: 500; text-decoration: none;">Forgot Password?</a>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;" id="loginBtn">Login<div class="spinner"></div></button>
                 </form>
-                <div style="text-align: right; margin-top: -15px; margin-bottom: 20px;">
-                    <a onclick="openForgotPasswordModal()" style="color: var(--primary); cursor: pointer; font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
-                </div>
                 <div class="auth-footer">Don't have an account? <a onclick="navigateTo('register')">Register here</a></div>
             </div>
         </div>
