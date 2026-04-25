@@ -423,6 +423,8 @@
     </style>
 
 <base target="_blank">
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <nav id="navbar">
@@ -1148,12 +1150,129 @@
             const stats = calculateNetworkStats(currentUser.referralCode);
             const directReferrals = referrals[currentUser.referralCode] || [];
 
-            // Determine how many stages are COMPLETED based on network size
-            // Starter complete = 6 people, Stage 1 complete = 36 people, etc.
+            // Determine how many stages are COMPLETED based on matrix filling
+            // Each stage requires a fresh set of people from the previous stage's downline
+            // Starter: 2 direct + 4 indirect = 6 total (level 1 + level 2)
+            // Stage 1: Those 6 each bring 6 = 36 fresh people
+            // Stage 2: Those 36 each bring 6 = 216 fresh people
+            // etc.
             let completedStages = 0;
-            for (let i = 0; i < stageRewards.length; i++) {
-                if (stats.total >= stageRewards[i].required) {
-                    completedStages = i + 1; // +1 because stage 0 completion = 1 stage done
+
+            // Check Starter completion: need 6 people in network
+            if (stats.total >= 6) {
+                completedStages = 1; // Starter complete, now in Stage 1
+            }
+
+            // For higher stages, we need to check if the PREVIOUS stage's people
+            // have each completed their own matrices
+            // Stage 1 complete = each of the 6 people has 6 people = 36 fresh
+            // Stage 2 complete = each of the 36 people has 6 people = 216 fresh
+            // This is tracked by checking if direct referrals have completed THEIR stages
+
+            // Check Stage 1 completion: all 6 direct referrals must have completed Starter
+            if (completedStages >= 1) {
+                const directReferrals = referrals[currentUser.referralCode] || [];
+                let stage1Complete = true;
+                for (const ref of directReferrals) {
+                    const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                    if (!refUser) {
+                        stage1Complete = false;
+                        break;
+                    }
+                    const refStats = calculateNetworkStats(refUser.referralCode);
+                    if (refStats.total < 6) {
+                        stage1Complete = false;
+                        break;
+                    }
+                }
+                if (stage1Complete && directReferrals.length >= 2) {
+                    completedStages = 2; // Stage 1 complete, now in Stage 2
+                }
+            }
+
+            // Check Stage 2 completion: all direct referrals must have completed Stage 1
+            // (i.e., each has 36 people in their network)
+            if (completedStages >= 2) {
+                const directReferrals = referrals[currentUser.referralCode] || [];
+                let stage2Complete = true;
+                for (const ref of directReferrals) {
+                    const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                    if (!refUser) {
+                        stage2Complete = false;
+                        break;
+                    }
+                    const refStats = calculateNetworkStats(refUser.referralCode);
+                    // Check if refUser's downline has 36 people (their Stage 1 complete)
+                    if (refStats.total < 36) {
+                        stage2Complete = false;
+                        break;
+                    }
+                }
+                if (stage2Complete && directReferrals.length >= 2) {
+                    completedStages = 3; // Stage 2 complete, now in Stage 3
+                }
+            }
+
+            // Check Stage 3 completion: direct referrals must have 216 people
+            if (completedStages >= 3) {
+                const directReferrals = referrals[currentUser.referralCode] || [];
+                let stage3Complete = true;
+                for (const ref of directReferrals) {
+                    const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                    if (!refUser) {
+                        stage3Complete = false;
+                        break;
+                    }
+                    const refStats = calculateNetworkStats(refUser.referralCode);
+                    if (refStats.total < 216) {
+                        stage3Complete = false;
+                        break;
+                    }
+                }
+                if (stage3Complete && directReferrals.length >= 2) {
+                    completedStages = 4; // Stage 3 complete, now in Stage 4
+                }
+            }
+
+            // Check Stage 4 completion: direct referrals must have 1296 people
+            if (completedStages >= 4) {
+                const directReferrals = referrals[currentUser.referralCode] || [];
+                let stage4Complete = true;
+                for (const ref of directReferrals) {
+                    const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                    if (!refUser) {
+                        stage4Complete = false;
+                        break;
+                    }
+                    const refStats = calculateNetworkStats(refUser.referralCode);
+                    if (refStats.total < 1296) {
+                        stage4Complete = false;
+                        break;
+                    }
+                }
+                if (stage4Complete && directReferrals.length >= 2) {
+                    completedStages = 5; // Stage 4 complete, now in Stage 5
+                }
+            }
+
+            // Check Stage 5 completion: direct referrals must have 7776 people
+            if (completedStages >= 5) {
+                const directReferrals = referrals[currentUser.referralCode] || [];
+                let stage5Complete = true;
+                for (const ref of directReferrals) {
+                    const refUser = users.find(u => u.username === ref.username || u.email === ref.email);
+                    if (!refUser) {
+                        stage5Complete = false;
+                        break;
+                    }
+                    const refStats = calculateNetworkStats(refUser.referralCode);
+                    if (refStats.total < 7776) {
+                        stage5Complete = false;
+                        break;
+                    }
+                }
+                if (stage5Complete && directReferrals.length >= 2) {
+                    completedStages = 6; // All stages complete
                 }
             }
 
@@ -1162,9 +1281,26 @@
             let newStage = completedStages;
             if (newStage > 5) newStage = 5;
 
-            // If stage changed (new stages completed), notify user
+            // Initialize wallet if not exists
+            if (!currentUser.wallet) currentUser.wallet = 0;
+
+            // If stage changed (new stages completed), credit wallet and notify user
             if (newStage > currentUser.stage) {
                 const oldStage = currentUser.stage;
+
+                // Credit wallet for newly completed stage(s)
+                for (let i = oldStage; i < newStage; i++) {
+                    const stageReward = stageRewards[i].withdrawable;
+                    currentUser.wallet += stageReward;
+
+                    // Show notification for each stage completion
+                    setTimeout(() => {
+                        showNotification('Stage ' + (i === 0 ? 'Starter' : i) + ' Complete!', 
+                            '₦' + stageReward.toLocaleString() + ' has been added to your wallet!', 
+                            'success');
+                    }, i * 500);
+                }
+
                 currentUser.stage = newStage;
 
                 showNotification('Stage Upgraded!', 
@@ -1177,6 +1313,19 @@
                 currentUser.stage = newStage;
             }
 
+            // Ensure wallet has all completed stage earnings (recovery mechanism)
+            let expectedWallet = 0;
+            for (let i = 0; i < completedStages; i++) {
+                expectedWallet += stageRewards[i].withdrawable;
+            }
+
+            // If wallet is less than expected (e.g., due to old data), add the difference
+            if (currentUser.wallet < expectedWallet) {
+                const difference = expectedWallet - currentUser.wallet;
+                currentUser.wallet += difference;
+                console.log('Wallet corrected: Added ₦' + difference.toLocaleString());
+            }
+
             localStorage.setItem('henboryx_current_user', JSON.stringify(currentUser));
 
             // Update user in users array
@@ -1186,19 +1335,13 @@
                 localStorage.setItem('henboryx_users', JSON.stringify(users));
             }
 
-            // Calculate withdrawable amount based on COMPLETED stages
-            // Only stages that are fully completed can be withdrawn
-            let availableAmount = 0;
-            let availableStages = [];
+            // Calculate available withdrawal amount (wallet - pending withdrawals)
+            const userWithdrawals = withdrawals[currentUser.username] || [];
+            const pendingAmount = userWithdrawals
+                .filter(w => w.status === 'pending')
+                .reduce((sum, w) => sum + w.amount, 0);
 
-            for (let i = 0; i < completedStages; i++) {
-                availableAmount += stageRewards[i].withdrawable;
-                availableStages.push(i);
-            }
-
-            // Subtract already withdrawn amount
-            const alreadyWithdrawn = currentUser.withdrawnAmount || 0;
-            availableAmount = Math.max(0, availableAmount - alreadyWithdrawn);
+            const availableAmount = Math.max(0, currentUser.wallet - pendingAmount);
 
             // Update winnings display
             document.getElementById('totalWinnings').textContent = '₦' + availableAmount.toLocaleString();
@@ -1215,12 +1358,11 @@
                 withdrawBtn.disabled = true;
                 withdrawBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Withdraw to Bank';
 
-                // Show what's needed to unlock next stage
+                // Show static requirement for current stage
                 if (completedStages < stageRewards.length) {
-                    const nextReq = stageRewards[completedStages].required;
-                    const remaining = nextReq - stats.total;
-                    withdrawalStatus.textContent = 'Need ' + remaining + ' more people to complete ' + 
-                        (completedStages === 0 ? 'Starter' : 'Stage ' + completedStages);
+                    const currentStageTarget = stageRewards[completedStages].required;
+                    const stageName = completedStages === 0 ? 'Starter' : 'Stage ' + completedStages;
+                    withdrawalStatus.textContent = currentStageTarget + ' people needed to complete ' + stageName;
                 } else {
                     withdrawalStatus.textContent = 'All stages completed!';
                 }
@@ -1585,7 +1727,17 @@
                 setTimeout(() => confetti.remove(), 4000);
             }
         }
-
+// When user completes a stage and earns money
+function creditUserWallet(username, amount) {
+    const users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
+    const userIndex = users.findIndex(u => u.username === username);
+    
+    if (userIndex !== -1) {
+        if (!users[userIndex].wallet) users[userIndex].wallet = 0;
+        users[userIndex].wallet += amount;
+        localStorage.setItem('henboryx_users', JSON.stringify(users));
+    }
+}
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('withdrawal-modal')) {
