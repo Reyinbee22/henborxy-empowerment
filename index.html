@@ -6,7 +6,7 @@
 <script src="https://js.paystack.co/v2/inline.js"></script>
 <script>
     // Paystack Configuration - REPLACE with your actual public key from paystack.com
-    const PAYSTACK_PUBLIC_KEY = 'pk_test_7783ce1a4ff79c21b631ff4c867df8fefff9c089'; // Test mode
+    const PAYSTACK_PUBLIC_KEY = 'pk_test_3226b66e495911a0dbbdc6c78475f9aa7f67df25'; // Test mode
     // const PAYSTACK_PUBLIC_KEY = 'pk_live_your_actual_key_here'; // Live mode (when ready)
     
     /**
@@ -422,6 +422,7 @@
         }
     </style>
 
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -899,7 +900,7 @@
     const btn = document.getElementById('registerBtn');
     btn.classList.add('btn-loading');
 
-    const name = document.getElementById('regName').value;
+    const name = document.getElementById('regName').value.trim();
     const username = document.getElementById('regUsername').value.toLowerCase().trim();
     const email = document.getElementById('regEmail').value.toLowerCase().trim();
     const phone = document.getElementById('regPhone').value.trim();
@@ -912,13 +913,13 @@
         btn.classList.remove('btn-loading');
         return;
     }
-    
+
     if (users.find(u => u.username === username)) {
         showError('registerError', 'Username already taken. Please choose another.');
         btn.classList.remove('btn-loading');
         return;
     }
-    
+
     if (email && users.find(u => u.email === email)) {
         showError('registerError', 'Email already registered. Please login.');
         btn.classList.remove('btn-loading');
@@ -933,6 +934,18 @@
         return;
     }
 
+    // Validate referrer code if provided
+    let validReferrer = null;
+    if (referrerCode) {
+        const referrerUser = users.find(u => u.referralCode === referrerCode);
+        if (!referrerUser) {
+            showError('registerError', 'Invalid referrer code. Please check and try again, or leave empty.');
+            btn.classList.remove('btn-loading');
+            return;
+        }
+        validReferrer = referrerCode;
+    }
+
     // Create user data object
     const userData = {
         id: Date.now(),
@@ -942,7 +955,7 @@
         phone: phone,
         password: password,
         referralCode: generateReferralCode(),
-        referrer: referrerCode || null,
+        referrer: validReferrer,
         stage: 0,
         joinedDate: new Date().toISOString(),
         paymentStatus: 'pending',
@@ -951,58 +964,84 @@
         paymentDate: null,
         bankDetails: null,
         withdrawnAmount: 0,
-        totalEarned: 0
+        totalEarned: 0,
+        wallet: 0
     };
 
     // Initialize Paystack payment
     payWithPaystack(userData, function(transaction) {
         // This runs AFTER successful Paystack payment
-        
+
+        // Reload users from localStorage to get latest data (in case other tabs updated it)
+        users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
+        referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
+
+        // Double-check username is still unique
+        if (users.find(u => u.username === userData.username)) {
+            showError('registerError', 'Username was just taken. Please refresh and try again.');
+            btn.classList.remove('btn-loading');
+            return;
+        }
+
         // Save user to localStorage
         users.push(userData);
         localStorage.setItem('henboryx_users', JSON.stringify(users));
-        
-        // Initialize referrals
+
+        // Initialize referrals for this user
         referrals[userData.referralCode] = [];
         localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
-        
-        // Handle referrer
+
+        // Handle referrer - CRITICAL FIX
         if (userData.referrer) {
+            // Reload to ensure we have the latest data
+            users = JSON.parse(localStorage.getItem('henboryx_users')) || [];
+            referrals = JSON.parse(localStorage.getItem('henboryx_referrals')) || {};
+
             const referrer = users.find(u => u.referralCode === userData.referrer);
             if (referrer) {
+                // Initialize referrer's referral array if not exists
                 if (!referrals[userData.referrer]) {
                     referrals[userData.referrer] = [];
                 }
+
+                // Add new user to referrer's list
                 referrals[userData.referrer].push({
                     name: userData.name,
                     username: userData.username,
                     email: userData.email,
                     date: new Date().toISOString(),
-                    paymentStatus: 'paid'
+                    paymentStatus: 'paid',
+                    referralCode: userData.referralCode
                 });
+
+                // Save referrals
                 localStorage.setItem('henboryx_referrals', JSON.stringify(referrals));
+
+                // Notify referrer
                 notifyReferrer(referrer, userData);
+
+                console.log('Referral saved:', userData.username, '->', referrer.username);
+            } else {
+                console.warn('Referrer not found for code:', userData.referrer);
             }
         }
-        
+
         // Notify new user
         notifyNewUser(userData);
-        
+
         // Show success
         btn.classList.remove('btn-loading');
         document.getElementById('registerSuccess').style.display = 'block';
         document.getElementById('registerSuccess').innerHTML = 
             '<i class="fas fa-check-circle"></i> Payment successful! Ref: ' + transaction.reference + 
             '. Redirecting to login...';
-        
+
         // Redirect to login after 2 seconds
         setTimeout(() => {
             navigateTo('login');
             document.getElementById('loginUsername').value = userData.username;
         }, 2000);
     });
-    
-    btn.classList.remove('btn-loading');
 }
         function completeRegistration(paymentReference) {
             if (!pendingRegistration) return;
